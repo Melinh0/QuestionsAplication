@@ -48,8 +48,10 @@ function NewTopic() {
               required
             />
           </div>
-          <button type="submit" className="save-button">Criar</button>
-          <Link to="/" className="button" style={{ backgroundColor: '#6c757d' }}>Cancelar</Link>
+          <div className="form-actions">
+            <button type="submit" className="save-button">Criar</button>
+            <Link to="/" className="button" style={{ backgroundColor: '#6c757d' }}>Cancelar</Link>
+          </div>
         </form>
       </main>
     </div>

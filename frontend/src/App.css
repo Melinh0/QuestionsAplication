@@ -824,3 +824,217 @@ canvas {
 .action-buttons .delete-button:hover {
     opacity: 0.9;
 }
+
+/* Espaçamento entre botões do formulário */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Container dos botões principais da página Gemini */
+.gemini-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+/* Ajustes para o painel de coordenadas (Gemini) */
+.coords-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.coord-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.coord-item label {
+    min-width: 180px;
+    font-weight: bold;
+    color: #004a99;
+}
+
+.coord-inputs {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.coord-inputs input {
+    width: 70px;
+    padding: 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.capture-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.capture-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.capture-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.countdown {
+    font-weight: bold;
+    color: #dc3545;
+    min-width: 1.5rem;
+}
+
+.save-coords-btn {
+    background-color: #004a99;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.save-coords-btn:hover {
+    background-color: #003377;
+}
+
+.toggle-coords {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s;
+}
+
+.toggle-coords:hover {
+    background-color: #5a6268;
+}
+
+/* Estilos para conteúdo Markdown/LaTeX */
+.markdown-content {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #004a99;
+}
+
+.markdown-content h3 {
+    color: #004a99;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.markdown-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid #004a99;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+}
+
+.markdown-content p {
+    margin-bottom: 1rem;
+}
+
+/* Ajuste para fórmulas KaTeX */
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 0;
+}
+
+.markdown-content {
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #004a99;
+    overflow-x: auto;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+    color: #004a99;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.markdown-content p {
+    margin-bottom: 1rem;
+}
+
+.markdown-content ol,
+.markdown-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid #004a99;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+}
+
+.markdown-content code {
+    background-color: #e0e0e0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.markdown-content pre {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* Ajuste para fórmulas KaTeX */
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem 0;
+}

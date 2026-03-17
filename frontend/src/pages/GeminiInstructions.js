@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { processGemini, executeGemini, getMousePosition } from '../services/api';
 
 function GeminiInstructions() {
@@ -82,22 +85,31 @@ function GeminiInstructions() {
       });
   };
 
+  // Texto das instruções em Markdown (permite LaTeX)
+  const instructionsMarkdown = `
+### 📋 Instruções importantes:
+
+1. Abra o **Gemini (gemini.google.com)** no seu navegador e faça login.
+2. Garanta que a janela do navegador esteja visível e com o foco (não minimizada).
+3. O bot irá controlar o mouse e teclado. **Não mexa** durante a execução.
+4. Antes de iniciar, configure as coordenadas dos botões no painel abaixo. Para cada campo, clique em "Capturar": você terá 3 segundos para mover o mouse sobre o elemento correspondente no Gemini; após esse tempo, a posição será capturada automaticamente.
+5. O processo pode levar vários minutos dependendo da quantidade de imagens.
+6. Após iniciar, acompanhe o log. Quando terminar, você será redirecionado de volta ao tópico.
+  `;
+
   return (
     <div className="container">
       <main className="content" style={{ maxWidth: '900px', margin: '0 auto' }}>
         <h1>🤖 Processar com Gemini - {topicName}</h1>
         <hr />
 
-        <div className="instrucoes">
-          <h3>📋 Instruções importantes:</h3>
-          <ol>
-            <li>Abra o <strong>Gemini (gemini.google.com)</strong> no seu navegador e faça login.</li>
-            <li>Garanta que a janela do navegador esteja visível e com o foco (não minimizada).</li>
-            <li>O bot irá controlar o mouse e teclado. <strong>Não mexa</strong> durante a execução.</li>
-            <li>Antes de iniciar, configure as coordenadas dos botões no painel abaixo. Para cada campo, clique em "Capturar": você terá 3 segundos para mover o mouse sobre o elemento correspondente no Gemini; após esse tempo, a posição será capturada automaticamente.</li>
-            <li>O processo pode levar vários minutos dependendo da quantidade de imagens.</li>
-            <li>Após iniciar, acompanhe o log. Quando terminar, você será redirecionado de volta ao tópico.</li>
-          </ol>
+        <div className="instrucoes markdown-content">
+          <ReactMarkdown
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {instructionsMarkdown}
+          </ReactMarkdown>
         </div>
 
         <button className="toggle-coords" onClick={() => setPanelVisible(!panelVisible)}>
@@ -150,15 +162,17 @@ function GeminiInstructions() {
           </div>
         )}
 
-        <button
-          id="startBtn"
-          className="save-button"
-          onClick={handleStartProcessing}
-          disabled={processing}
-        >
-          {processing ? 'Processando...' : '▶️ Iniciar processamento'}
-        </button>
-        <a href={`/topic/${topicName}`} className="button" style={{ backgroundColor: '#6c757d' }}>Cancelar</a>
+        <div className="gemini-actions">
+          <button
+            id="startBtn"
+            className="save-button"
+            onClick={handleStartProcessing}
+            disabled={processing}
+          >
+            {processing ? 'Processando...' : '▶️ Iniciar processamento'}
+          </button>
+          <a href={`/topic/${topicName}`} className="button" style={{ backgroundColor: '#6c757d' }}>Cancelar</a>
+        </div>
 
         <div id="output" style={{ background: '#1e1e1e', color: '#0f0', padding: '1rem', borderRadius: '4px', fontFamily: 'monospace', whiteSpace: 'pre-wrap', maxHeight: '400px', overflowY: 'auto', marginTop: '1rem' }}>
           {output}
