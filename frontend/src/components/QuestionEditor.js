@@ -81,12 +81,13 @@ function QuestionEditor({ question, onSave, onDelete, topicName, imageFilename, 
           </div>
         )}
 
-        <div className="action-buttons">
+        <div className="action-buttons" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button type="submit" className="save-button">💾 Salvar Alterações</button>
           <button type="button" onClick={onDelete} className="delete-button">🗑️ Deletar Questão</button>
           <a
             href={getDownloadQuestionTextUrl(topicName, imageFilename, qIdx, currentIdx)}
             className="button"
+            style={{ backgroundColor: '#6c757d' }}
           >
             📥 Baixar resolução (texto)
           </a>

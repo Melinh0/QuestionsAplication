@@ -6,16 +6,11 @@ import {
   getDownloadWhiteboardsUrl
 } from '../services/api';
 
-function Sidebar({ topicName, currentImage, currentIdx, total, questions, qIdx, onPrev, onNext, onQuestionChange, collapsed }) {
+function Sidebar({ topicName, questions, qIdx, onQuestionChange, collapsed }) {
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`} id="sidebar">
       <h2>Navegação</h2>
       <p><Link to="/">⬅️ Todos os tópicos</Link></p>
-      <p><strong>Página atual:</strong> {currentImage}</p>
-      <div className="nav-buttons">
-        <button onClick={onPrev} className="button" disabled={currentIdx === 0}>⬅️ Anterior</button>
-        <button onClick={onNext} className="button" disabled={currentIdx === total - 1}>Próximo ➡️</button>
-      </div>
       {questions.length > 0 ? (
         <div className="question-selector">
           <label htmlFor="questao-select">Selecione a questão:</label>

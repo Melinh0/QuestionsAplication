@@ -24,6 +24,9 @@ export const renameTopic = (oldName, newName) => {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
   });
 };
+export const deleteImage = (topicName, filename) => {
+  return api.post(`/topic/${topicName}/delete_image/${encodeURIComponent(filename)}`);
+};
 
 // Questões
 export const addQuestion = (topicName, imageFilename, data) => {

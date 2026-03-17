@@ -186,13 +186,8 @@ function TopicView() {
     <div className="container">
       <Sidebar
         topicName={topicName}
-        currentImage={currentImage}
-        currentIdx={currentIdx}
-        total={images.length}
         questions={questions}
         qIdx={qIdx}
-        onPrev={handlePrev}
-        onNext={handleNext}
         onQuestionChange={handleQuestionChange}
         collapsed={sidebarCollapsed}
       />
@@ -226,7 +221,21 @@ function TopicView() {
             <ImageViewer
               topicName={topicName}
               currentImage={currentImage}
+              currentIdx={currentIdx}
+              total={images.length}
+              onPrev={handlePrev}
+              onNext={handleNext}
               onAddQuestion={() => setShowAddModal(true)}
+              onImageDeleted={() => {
+                const newImages = images.filter((_, i) => i !== currentIdx);
+                setImages(newImages);
+                if (newImages.length === 0) {
+                  navigate('/');
+                } else {
+                  const newIdx = Math.min(currentIdx, newImages.length - 1);
+                  setSearchParams({ idx: newIdx, q: 0 });
+                }
+              }}
             />
           </div>
           <div className="resolution-col" style={{ flex: `0 0 ${100 - imageWidth}%`, minWidth: '300px' }}>

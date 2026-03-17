@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models.topic_model import TopicModel
 from utils.markdown import markdown_to_html
 import os
-import shutil
 
 topic_bp = Blueprint('topic', __name__)
 
@@ -47,7 +46,6 @@ def ver_topic(topic_name):
             'resolutions': resolutions
         })
 
-    # Para renderização HTML (caso ainda necessário)
     try:
         idx = int(request.args.get('idx', 0))
     except ValueError:
@@ -131,3 +129,50 @@ def rename_topic(old_name):
             return jsonify({'success': False, 'error': message}), 500
         flash(f'Erro ao renomear: {message}', 'error')
         return redirect(url_for('topic.ver_topic', topic_name=old_name))
+
+@topic_bp.route('/topic/<topic_name>/delete_image/<path:filename>', methods=['POST'])
+def delete_image(topic_name, filename):
+    """
+    Deleta uma imagem do tópico (do diretório de imagens e também das resoluções).
+    """
+    images_folder = TopicModel.get_images_folder(topic_name)
+    filepath = os.path.join(images_folder, filename)
+    
+    if not os.path.exists(filepath):
+        if request.accept_mimetypes.accept_json:
+            return jsonify({'success': False, 'error': 'Arquivo não encontrado.'}), 404
+        flash('Arquivo não encontrado.', 'error')
+        return redirect(url_for('topic.ver_topic', topic_name=topic_name))
+
+    try:
+        os.remove(filepath)
+
+        resolutions = TopicModel.get_resolutions(topic_name)
+        resolutions = [item for item in resolutions if item.get("imagem") != filename]
+        TopicModel.save_resolutions(topic_name, resolutions)
+
+        whiteboard_folder = TopicModel.get_whiteboards_folder(topic_name)
+        if os.path.isdir(whiteboard_folder):
+            for item in os.listdir(whiteboard_folder):
+                if filename in item:
+                    whiteboard_path = os.path.join(whiteboard_folder, item)
+                    try:
+                        if os.path.isfile(whiteboard_path):
+                            os.remove(whiteboard_path)
+                    except Exception as e:
+                        print(f"Erro ao remover whiteboard {whiteboard_path}: {e}")
+
+        if request.accept_mimetypes.accept_json:
+            return jsonify({'success': True})
+        flash('Imagem deletada com sucesso!', 'success')
+
+    except PermissionError:
+        if request.accept_mimetypes.accept_json:
+            return jsonify({'success': False, 'error': 'Permissão negada para deletar o arquivo.'}), 500
+        flash('Permissão negada para deletar o arquivo.', 'error')
+    except Exception as e:
+        if request.accept_mimetypes.accept_json:
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f'Erro ao deletar imagem: {str(e)}', 'error')
+
+    return redirect(url_for('topic.ver_topic', topic_name=topic_name))

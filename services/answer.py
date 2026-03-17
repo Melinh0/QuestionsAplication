@@ -7,6 +7,13 @@ Aceita argumentos:
 --json: arquivo JSON de saída
 --sqlite: arquivo SQLite (opcional)
 --coords: arquivo JSON com coordenadas personalizadas (opcional)
+
+Comportamento:
+- Processa todas as imagens da pasta.
+- Para cada imagem, extrai questões via Gemini e mescla com as já existentes no JSON.
+- Questões já presentes (mesmo número) são mantidas (prioridade manual).
+- Apenas questões novas são adicionadas.
+- Se SQLite estiver ativo, a tabela é atualizada com a lista final de questões da imagem.
 """
 
 import os
@@ -38,12 +45,11 @@ DEFAULT_COORD = {
     "voltar_campo_prompt": (514, 1016),
 }
 
-WAIT_AFTER_SEND = 30   # <--- ALTERADO DE 120 PARA 30
+WAIT_AFTER_SEND = 30
 MAX_RETRIES = 1
 DELAY_CLICK = 0.7
 DELAY_TYPING = 0.5
 
-# Prompt aprimorado (inalterado)
 PROMPT_TEMPLATE = """
 Analise cuidadosamente a imagem fornecida e resolva todas as questões que aparecem nela.
 
@@ -99,11 +105,9 @@ def carregar_coordenadas(arquivo_coords):
     if arquivo_coords and os.path.exists(arquivo_coords):
         with open(arquivo_coords, 'r', encoding='utf-8') as f:
             user_coords = json.load(f)
-        # Converte listas para tuplas
         for k, v in user_coords.items():
             if isinstance(v, list):
                 user_coords[k] = tuple(v)
-        # Mescla com as padrão (substitui apenas as fornecidas)
         coords = DEFAULT_COORD.copy()
         coords.update(user_coords)
         return coords
@@ -176,7 +180,6 @@ def limpar_chat(coords):
         print(f"  ⚠️ Erro ao limpar chat: {e}")
 
 def extrair_respostas(texto_resposta):
-    # (função inalterada)
     resultados = []
     blocos = re.split(r'---\s*INÍCIO DA QUESTÃO\s*---', texto_resposta, flags=re.IGNORECASE)
     for bloco in blocos[1:]:
@@ -199,7 +202,6 @@ def extrair_respostas(texto_resposta):
     return resultados
 
 def inicializar_sqlite(sqlite_path):
-    # (inalterada)
     conn = sqlite3.connect(sqlite_path)
     cursor = conn.cursor()
     cursor.execute('''
@@ -220,32 +222,20 @@ def inicializar_sqlite(sqlite_path):
     conn.commit()
     conn.close()
 
-def salvar_json(json_path, imagem, dados):
-    # (inalterada)
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            todas = json.load(f)
-    else:
-        todas = []
-    for item in todas:
-        if item.get("imagem") == imagem:
-            item["questoes"] = dados
-            break
-    else:
-        todas.append({
-            "imagem": imagem,
-            "data": datetime.now().isoformat(),
-            "questoes": dados
-        })
-    with open(json_path, 'w', encoding='utf-8') as f:
-        json.dump(todas, f, ensure_ascii=False, indent=2)
+def deletar_imagem_sqlite(sqlite_path, imagem):
+    """Remove todas as entradas da imagem no SQLite."""
+    conn = sqlite3.connect(sqlite_path)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM respostas WHERE imagem = ?", (imagem,))
+    conn.commit()
+    conn.close()
 
-def salvar_sqlite(sqlite_path, imagem, dados):
-    # (inalterada)
+def salvar_sqlite(sqlite_path, imagem, questoes):
+    """Insere as questões da imagem no SQLite (supõe que as antigas já foram deletadas)."""
     conn = sqlite3.connect(sqlite_path)
     cursor = conn.cursor()
     timestamp = datetime.now().isoformat()
-    for q in dados:
+    for q in questoes:
         cursor.execute('''
             INSERT INTO respostas (imagem, questao, tipo, resposta, explicacao, timestamp)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -253,13 +243,37 @@ def salvar_sqlite(sqlite_path, imagem, dados):
     conn.commit()
     conn.close()
 
-def obter_imagens_processadas(json_path):
-    # (inalterada)
-    if not os.path.exists(json_path):
-        return set()
-    with open(json_path, 'r', encoding='utf-8') as f:
-        dados = json.load(f)
-    return {item['imagem'] for item in dados}
+def merge_questoes_json(json_path, imagem, novas_questoes):
+    """
+    Faz o merge das novas questões com as existentes no JSON.
+    Retorna a lista final de questões para a imagem.
+    """
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            todas = json.load(f)
+    else:
+        todas = []
+
+    for item in todas:
+        if item.get("imagem") == imagem:
+            existentes = {q['questao']: q for q in item['questoes']}
+            for q in novas_questoes:
+                if q['questao'] not in existentes:
+                    item['questoes'].append(q)
+            questoes_finais = item['questoes']
+            break
+    else:
+        todas.append({
+            "imagem": imagem,
+            "data": datetime.now().isoformat(),
+            "questoes": novas_questoes
+        })
+        questoes_finais = novas_questoes
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(todas, f, ensure_ascii=False, indent=2)
+
+    return questoes_finais
 
 # ==================== MAIN ====================
 def main():
@@ -275,7 +289,6 @@ def main():
     ARQUIVO_SQLITE = args.sqlite
     ARQUIVO_COORDS = args.coords
 
-    # Carrega coordenadas (mescladas com as padrão)
     COORD = carregar_coordenadas(ARQUIVO_COORDS)
 
     if not os.path.exists(PASTA_IMAGENS):
@@ -286,14 +299,15 @@ def main():
     imagens.sort()
     print(f"📁 Encontradas {len(imagens)} imagens na pasta.")
 
-    processadas = obter_imagens_processadas(ARQUIVO_JSON)
-    pendentes = [img for img in imagens if img not in processadas]
-    print(f"✅ Já processadas: {len(processadas)}")
-    print(f"📝 Pendentes: {len(pendentes)}")
+    if os.path.exists(ARQUIVO_JSON):
+        with open(ARQUIVO_JSON, 'r', encoding='utf-8') as f:
+            dados = json.load(f)
+        processadas = {item['imagem'] for item in dados}
+        print(f"✅ Imagens já presentes no JSON: {len(processadas)}")
+    else:
+        print("✅ Nenhum JSON existente. Será criado.")
 
-    if not pendentes:
-        print("✨ Todas as imagens já foram processadas.")
-        return
+    print(f"📝 Todas as {len(imagens)} imagens serão processadas (merge com existentes).")
 
     if ARQUIVO_SQLITE:
         inicializar_sqlite(ARQUIVO_SQLITE)
@@ -303,8 +317,8 @@ def main():
         print(f"  {i}...")
         time.sleep(1)
 
-    for idx, imagem in enumerate(pendentes, 1):
-        print(f"\n--- Processando imagem {idx}/{len(pendentes)}: {imagem} ---")
+    for idx, imagem in enumerate(imagens, 1):
+        print(f"\n--- Processando imagem {idx}/{len(imagens)}: {imagem} ---")
         caminho_completo = os.path.join(PASTA_IMAGENS, imagem)
 
         sucesso = False
@@ -319,9 +333,10 @@ def main():
                 questoes = extrair_respostas(resposta)
                 if questoes:
                     print(f"  ✅ {len(questoes)} questões extraídas.")
-                    salvar_json(ARQUIVO_JSON, imagem, questoes)
+                    questoes_finais = merge_questoes_json(ARQUIVO_JSON, imagem, questoes)
                     if ARQUIVO_SQLITE:
-                        salvar_sqlite(ARQUIVO_SQLITE, imagem, questoes)
+                        deletar_imagem_sqlite(ARQUIVO_SQLITE, imagem)
+                        salvar_sqlite(ARQUIVO_SQLITE, imagem, questoes_finais)
                     sucesso = True
                     break
                 else:
@@ -337,10 +352,9 @@ def main():
                 time.sleep(5)
 
         if not sucesso:
-            print(f"  ❌ Falha ao processar {imagem}.")
-            salvar_json(ARQUIVO_JSON, imagem, [{"questao": "ERRO", "tipo": "desconhecido", "resposta": "", "explicacao": "Falha no processamento"}])
+            print(f"  ❌ Falha ao processar {imagem}. Nenhuma questão adicionada.")
 
-        if idx < len(pendentes):
+        if idx < len(imagens):
             print("  ⏳ Aguardando 10 segundos para próxima imagem...")
             time.sleep(10)
 
