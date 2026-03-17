@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processar com Gemini - {{ topic }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .instrucoes { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 1.5rem; margin: 1rem 0; border-radius: 4px; }
+        #output { background: #1e1e1e; color: #0f0; padding: 1rem; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; margin-top: 1rem; }
+        .flash-success { background-color: #d4edda; border-left: 4px solid #28a745; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; }
+        .flash-error { background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; }
+        .coords-panel {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .coords-panel h3 {
+            margin-top: 0;
+            color: #004a99;
+            margin-bottom: 1rem;
+        }
+        .coords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .coord-item {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            border-radius: 4px;
+            background: white;
+        }
+        .coord-item label {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+        .coord-inputs {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .coord-inputs input {
+            width: 70px;
+            padding: 0.25rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .capture-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: auto;
+            transition: background-color 0.2s;
+        }
+        .capture-btn:hover {
+            background-color: #218838;
+        }
+        .capture-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .save-coords-btn {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #004a99;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .save-coords-btn:hover {
+            background-color: #003377;
+        }
+        .toggle-coords {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .toggle-coords:hover {
+            background-color: #5a6268;
+        }
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #dc3545;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main class="content" style="max-width: 900px; margin: 0 auto;">
+            <h1>🤖 Processar com Gemini - {{ topic }}</h1>
+            <hr>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="instrucoes">
+                <h3>📋 Instruções importantes:</h3>
+                <ol>
+                    <li>Abra o <strong>Gemini (gemini.google.com)</strong> no seu navegador e faça login.</li>
+                    <li>Garanta que a janela do navegador esteja visível e com o foco (não minimizada).</li>
+                    <li>O bot irá controlar o mouse e teclado. <strong>Não mexa</strong> durante a execução.</li>
+                    <li>Antes de iniciar, configure as coordenadas dos botões no painel abaixo. Para cada campo, clique em "Capturar": você terá 3 segundos para mover o mouse sobre o elemento correspondente no Gemini; após esse tempo, a posição será capturada automaticamente.</li>
+                    <li>O processo pode levar vários minutos dependendo da quantidade de imagens.</li>
+                    <li>Após iniciar, acompanhe o log. Quando terminar, você será redirecionado de volta ao tópico.</li>
+                </ol>
+            </div>
+
+            <button class="toggle-coords" onclick="toggleCoordsPanel()">⚙️ Configurar coordenadas</button>
+
+            <div id="coordsPanel" class="coords-panel" style="display: none;">
+                <h3>Coordenadas dos botões (X, Y)</h3>
+                <div class="coords-grid" id="coordsGrid">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
+                <button class="save-coords-btn" onclick="saveCoords()">Salvar coordenadas</button>
+            </div>
+
+            <button id="startBtn" class="save-button">▶️ Iniciar processamento</button>
+            <a href="{{ url_for('topic.ver_topic', topic_name=topic) }}" class="button" style="background-color: #6c757d;">Cancelar</a>
+
+            <div id="output">Aguardando início...</div>
+        </main>
+    </div>
+
+    <script>
+        // URLs geradas pelo Flask
+        const getMousePositionUrl = "{{ url_for('gemini.get_mouse_position') }}";
+        const executarGeminiUrl = "{{ url_for('gemini.executar_gemini_ajax', topic_name=topic) }}";
+        const streamGeminiUrl = "{{ url_for('gemini.stream_gemini', topic_name=topic) }}";
+        const voltarUrl = "{{ url_for('topic.ver_topic', topic_name=topic) }}";
+
+        // Coordenadas padrão passadas do servidor
+        const defaultCoords = JSON.parse('{{ default_coords | tojson | safe }}');
+        let currentCoords = { ...defaultCoords };
+        let eventSource = null;
+
+        // Lista de chaves das coordenadas na ordem desejada para exibição
+        const coordKeys = [
+            "campo_prompt",
+            "botao_anexar",
+            "botao_enviar_arquivos",
+            "botao_abrir_dialogo",
+            "enviar_mensagem",
+            "ver_mais_resposta",
+            "copiar_resposta",
+            "abrir_barra_lateral",
+            "icone_chat",
+            "excluir_chat",
+            "confirmar_exclusao",
+            "voltar_campo_prompt"
+        ];
+
+        // Preenche o grid de coordenadas
+        function renderCoords() {
+            const grid = document.getElementById('coordsGrid');
+            grid.innerHTML = '';
+            for (const key of coordKeys) {
+                const value = currentCoords[key] || [0, 0];
+                const item = document.createElement('div');
+                item.className = 'coord-item';
+                item.innerHTML = `
+                    <label for="${key}">${key}:</label>
+                    <div class="coord-inputs">
+                        <input type="number" id="${key}_x" value="${value[0]}" step="1" placeholder="X">
+                        <input type="number" id="${key}_y" value="${value[1]}" step="1" placeholder="Y">
+                        <button class="capture-btn" data-key="${key}">📸 Capturar</button>
+                        <span class="countdown" id="countdown-${key}" style="display: none;"></span>
+                    </div>
+                `;
+                grid.appendChild(item);
+            }
+
+            // Adiciona event listeners para os botões de captura
+            document.querySelectorAll('.capture-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const key = this.dataset.key;
+                    startCapture(key);
+                });
+            });
+        }
+
+        // Função de captura com contagem regressiva
+        function startCapture(key) {
+            const btn = document.querySelector(`.capture-btn[data-key="${key}"]`);
+            const countdownSpan = document.getElementById(`countdown-${key}`);
+            if (!btn || !countdownSpan) return;
+
+            // Desabilita o botão
+            btn.disabled = true;
+            btn.textContent = '⏳ Aguarde...';
+
+            let seconds = 3;
+            countdownSpan.style.display = 'inline';
+            countdownSpan.textContent = seconds;
+
+            const interval = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    countdownSpan.textContent = seconds;
+                } else {
+                    clearInterval(interval);
+                    countdownSpan.style.display = 'none';
+                    // Faz a requisição para capturar a posição
+                    fetch(getMousePositionUrl, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert('Erro: ' + data.error);
+                            } else {
+                                const xInput = document.getElementById(`${key}_x`);
+                                const yInput = document.getElementById(`${key}_y`);
+                                if (xInput && yInput) {
+                                    xInput.value = data.x;
+                                    yInput.value = data.y;
+                                    currentCoords[key] = [data.x, data.y];
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            alert('Erro na captura: ' + err);
+                        })
+                        .finally(() => {
+                            // Reabilita o botão
+                            btn.disabled = false;
+                            btn.textContent = '📸 Capturar';
+                        });
+                }
+            }, 1000);
+        }
+
+        // Atualiza currentCoords a partir dos inputs
+        function updateCoordsFromInputs() {
+            for (const key of coordKeys) {
+                const xInput = document.getElementById(`${key}_x`);
+                const yInput = document.getElementById(`${key}_y`);
+                if (xInput && yInput) {
+                    currentCoords[key] = [parseInt(xInput.value) || 0, parseInt(yInput.value) || 0];
+                }
+            }
+        }
+
+        // Salva as coordenadas (apenas no frontend, serão enviadas ao iniciar)
+        function saveCoords() {
+            updateCoordsFromInputs();
+            alert('Coordenadas salvas localmente.');
+            toggleCoordsPanel(); // opcional: fechar painel
+        }
+
+        function toggleCoordsPanel() {
+            const panel = document.getElementById('coordsPanel');
+            if (panel.style.display === 'none') {
+                renderCoords(); // atualiza com os valores atuais
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Iniciar processamento
+        document.getElementById('startBtn').addEventListener('click', function() {
+            const btn = this;
+            const output = document.getElementById('output');
+            
+            btn.disabled = true;
+            btn.textContent = 'Iniciando...';
+
+            updateCoordsFromInputs();
+
+            fetch(executarGeminiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coords: currentCoords })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    output.textContent += '\n✅ Processo iniciado. Conectando ao stream...\n';
+                    
+                    if (eventSource) eventSource.close();
+                    
+                    eventSource = new EventSource(streamGeminiUrl);
+                    
+                    eventSource.onmessage = function(e) {
+                        output.textContent += e.data + '\n';
+                        output.scrollTop = output.scrollHeight;
+                        
+                        if (e.data.includes('✅ Processamento concluído')) {
+                            eventSource.close();
+                            setTimeout(() => {
+                                window.location.href = voltarUrl;
+                            }, 3000);
+                        }
+                    };
+                    
+                    eventSource.onerror = function() {
+                        output.textContent += '\n❌ Erro na conexão com o servidor.\n';
+                        eventSource.close();
+                        btn.disabled = false;
+                        btn.textContent = '▶️ Iniciar processamento';
+                    };
+                } else {
+                    output.textContent += '\n❌ Erro ao iniciar: ' + data.error + '\n';
+                    btn.disabled = false;
+                    btn.textContent = '▶️ Iniciar processamento';
+                }
+            })
+            .catch(error => {
+                output.textContent += '\n❌ Falha na requisição: ' + error.message + '\n';
+                btn.disabled = false;
+                btn.textContent = '▶️ Iniciar processamento';
+            });
+        });
+
+        // Abre o painel por padrão
+        window.onload = function() {
+            toggleCoordsPanel();
+        };
+    </script>
+</body>
+</html>

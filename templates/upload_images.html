@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Imagens - {{ topic }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>📌 Navegação</h2>
+            <p><a href="{{ url_for('topic.home') }}">⬅️ Todos os tópicos</a></p>
+            <p><a href="{{ url_for('topic.ver_topic', topic_name=topic) }}">⬅️ Voltar para o tópico</a></p>
+        </aside>
+        <main class="content">
+            <h1>🖼️ Upload de Imagens - {{ topic }}</h1>
+            <hr>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="images">Selecione as imagens (png, jpg, jpeg, gif, bmp):</label>
+                    <input type="file" name="images" id="images" multiple accept="image/*" required class="form-control">
+                </div>
+                <button type="submit" class="button">Enviar Imagens</button>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

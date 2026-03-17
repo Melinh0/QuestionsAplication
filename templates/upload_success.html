@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload concluído</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <main class="content" style="max-width: 600px; margin: 0 auto;">
+            <h1>✅ PDF enviado com sucesso!</h1>
+            <hr>
+            <p>Arquivo: <strong>{{ pdf_path }}</strong></p>
+            <p>Deseja extrair as imagens deste PDF agora?</p>
+            <form method="POST" action="{{ url_for('upload.extrair_imagens', topic_name=topic) }}">
+                <input type="hidden" name="pdf_path" value="{{ pdf_path }}">
+                <button type="submit" class="save-button">📸 Extrair imagens</button>
+                <a href="{{ url_for('topic.ver_topic', topic_name=topic) }}" class="button" style="background-color: #6c757d;">Ir para o tópico</a>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

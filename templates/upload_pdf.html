@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload PDF - {{ topic }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Classes para mensagens flash */
+        .flash-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <main class="content" style="max-width: 600px; margin: 0 auto;">
+            <h1>📤 Upload de PDF para "{{ topic }}"</h1>
+            <hr>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="POST" enctype="multipart/form-data" class="edit-form">
+                <div class="form-group">
+                    <label for="pdf">Selecione o arquivo PDF:</label>
+                    <input type="file" id="pdf" name="pdf" accept=".pdf" class="form-control" required>
+                </div>
+                <button type="submit" class="save-button">Enviar</button>
+                <a href="{{ url_for('topic.ver_topic', topic_name=topic) }}" class="button" style="background-color: #6c757d;">Voltar</a>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

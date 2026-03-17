@@ -1,0 +1,104 @@
+[
+  {
+    "imagem": "lista_de_exercicios_I_25_1_pag001.png",
+    "data": "2026-03-11T23:17:44.903132",
+    "questoes": [
+      {
+        "questao": "01",
+        "tipo": "dissertativa",
+        "resposta": "a) $\\Sigma = \\{0, 1\\}$ e $q_0 = A$.",
+        "explicacao": "a) No formalismo de gramáticas para autômatos, $\\Sigma$ (alfabeto) é o conjunto de terminais da gramática, que no item (b) são $\\{0, 1\\}$. O estado inicial $q_0$ corresponde ao símbolo inicial da gramática, que é $A$.\r\nb) Seguindo o procedimento descrito no topo da imagem:\r\n\r\n1. Como existe a regra $A \\to 0$ (forma $X \\to a$), o conjunto de estados $Q$ inclui o estado especial $Z$, além dos não-terminais $\\{A, B\\}$.\r\n2. As transições são mapeadas: $A \\to 0A$ gera transição de $A$ para $A$ com símbolo $0$. $A \\to 1B$ gera transição de $A$ para $B$ com $1$. $A \\to 0$ gera transição de $A$ para $Z$ com $0$.\r\n3. Os estados finais são aqueles que possuem produção vazia ($B \\to \\lambda$) e o estado $Z$."
+      },
+      {
+        "questao": "02",
+        "tipo": "dissertativa",
+        "resposta": "Para provar que $L$ é regular, construímos um AFD com 4 estados que representam a paridade de 0s e 1s:",
+        "explicacao": "Para provar que $L$ é regular, construímos um AFD com 4 estados que representam a paridade de 0s e 1s:\r\n\r\nUma linguagem é regular se puder ser reconhecida por um Autômato Finito Finito (AFD). O autômato acima monitora as duas condições simultaneamente. Como o número de estados é finito e cobre todas as combinações de paridade possíveis, a linguagem é, por definição, regular."
+      },
+      {
+        "questao": "03",
+        "tipo": "dissertativa",
+        "resposta": "a) **$b(ab)^n b$**: Estado $q_0 \\xrightarrow{b} q_1$. Em $q_1$, recebe $a \\to q_2$, de $q_2$ recebe $b \\to q_1$ (loop para $(ab)^n$). De $q_1$, uma transição final com $b$ leva ao estado de aceitação $q_f$.",
+        "explicacao": "Para cada item, projetamos a sequência de estados que respeita a ordem dos terminais e as repetições ($n \\ge 0$) indicadas pelos expoentes, garantindo que apenas as strings da linguagem alcancem o estado de aceitação."
+      },
+      {
+        "questao": "04",
+        "tipo": "dissertativa",
+        "resposta": "$L = \\{ w \\in \\{a, b\\}^* \\mid w \\text{ possui um número ímpar de 'a's e um número ímpar de 'b's} \\}$.",
+        "explicacao": "Analisando o diagrama:\r\n\r\n* $S_0$: par de $a$, par de $b$ (inicial).\r\n* $S_1$: ímpar de $a$, par de $b$.\r\n* $S_2$: par de $a$, ímpar de $b$.\r\n* $S_f$: ímpar de $a$, ímpar de $b$ (final).\r\nCada transição 'a' inverte a paridade de 'a' (horizontal) e cada transição 'b' inverte a paridade de 'b' (vertical). O estado de aceitação $S_f$ só é atingido quando ambos são ímpares."
+      },
+      {
+        "questao": "05",
+        "tipo": "dissertativa",
+        "resposta": "Sim, a linguagem é regular.",
+        "explicacao": "A linguagem $L = \\{a^* b c^* \\mid \\text{comprimento } \\ge 3\\}$ pode ser expressa por uma Expressão Regular. A condição de comprimento $\\ge 3$ para o formato $a^* b c^*$ significa que:\r\n\r\n1. Se não houver 'a's e nem 'c's, o comprimento seria 1 (apenas 'b'), o que não é permitido.\r\n2. Precisamos garantir que a soma dos expoentes de $a$, $b$ (que é 1) e $c$ seja $\\ge 3$.\r\nPodemos escrever a ER como: $(aaa^*bc^*) \\cup (aabc^*) \\cup (abc^*c) \\cup (abcc^*) \\cup (aabcc^*)$ e assim por diante. Como podemos construir um AFD que conte até 3 caracteres e valide a estrutura $a^* b c^*$, a linguagem é regular."
+      }
+    ]
+  },
+  {
+    "imagem": "lista_de_exercicios_I_25_1_pag002.png",
+    "data": "2026-03-15T16:11:24.199533",
+    "questoes": [
+      {
+        "questao": "06",
+        "tipo": "dissertativa",
+        "resposta": "Sim, a linguagem $L$ é regular.",
+        "explicacao": "A linguagem é definida por interseção e subtração de conjuntos: $L = (\\{w \\in \\Sigma^* \\mid w \\text{ contém } \"bb\"\\}) \\cap (\\{w \\in \\Sigma^* \\mid w \\text{ não contém } \"dd\"\\})$. Ambas as condições podem ser representadas por Expressões Regulares ou Autômatos Finitos. A primeira é $(a+b+c+d)^*bb(a+b+c+d)^*$. A segunda é o complemento da linguagem que contém \"dd\", que também é regular. Como a classe das linguagens regulares é fechada sob interseção e complemento, $L$ é regular."
+      },
+      {
+        "questao": "07",
+        "tipo": "dissertativa",
+        "resposta": "$L_1$ é regular porque pode ser expressa como o complemento de uma linguagem regular.",
+        "explicacao": "Seja $L_{exatamente3a}$ a linguagem que contém cadeias com exatamente três símbolos 'a' sobre $\\Sigma=\\{a, b\\}$. Esta linguagem é regular, descrita pela RE: $b^*ab^*ab^*ab^*$. A linguagem $L_1$ é definida como todas as cadeias de $\\Sigma^*$ exceto as de $L_{exatamente3a}$. Portanto, $L_1 = \\Sigma^* - L_{exatamente3a}$. Como as linguagens regulares são fechadas sob a operação de diferença (ou complemento), $L_1$ é comprovadamente regular."
+      },
+      {
+        "questao": "08",
+        "tipo": "dissertativa",
+        "resposta": "Sim, a linguagem $L$ é regular. Justificativa: ela é a interseção de quatro linguagens regulares.",
+        "explicacao": "Cada regra define uma linguagem regular:\r\na) Prefixo $aaa$: $aaa(a+b+c)^*$.\r\nb) Comprimento múltiplo de 4: $((a+b+c)^4)^*$.\r\nc) Quantidade par de $c$: Um autômato com dois estados (par/ímpar) resolve.\r\nd) Não contém $bb$: Complemento de $\\Sigma^*bb\\Sigma^*$.\r\nComo a interseção de linguagens regulares resulta sempre em uma linguagem regular, $L$ é regular. Sobre os exemplos: \"aaabcccc\" (8 letras, inicia com aaa, par de c, sem bb) **pertence**; \"aaabcbca\" (8 letras, inicia com aaa, par de c, sem bb) **pertence**; \"aaaa\" (4 letras, inicia com aaa, 0 c's [par], sem bb) **pertence**."
+      },
+      {
+        "questao": "09",
+        "tipo": "dissertativa",
+        "resposta": "M1 e M2 são Máquinas de Mealy ou Moore.",
+        "explicacao": "a) **M1:** Um Autômato Finito com Saída. Os estados representam as últimas 3 posições. Ex: Estado $q_{101}$ ao receber '0' vai para $q_{010}$ e emite a contagem de 1s nos dígitos atuais (no caso, 1).\r\nb) **M2:** Os estados representam o resto da divisão acumulada por 3 ($q_0, q_1, q_2$). Para o alfabeto $\\{0, 1, 2\\}$, a transição é $\\delta(q_i, n) = (i + n) \\mod 3$. A saída de cada estado é o próprio valor do resto."
+      },
+      {
+        "questao": "10",
+        "tipo": "dissertativa",
+        "resposta": "Prova-se através da relação $L_1 - L_2 = L_1 \\cap \\overline{L_2}$.",
+        "explicacao": "Sabemos que se $L_2$ é regular, seu complemento $\\overline{L_2}$ também é regular. Também sabemos que a interseção de duas linguagens regulares ($L_1$ e $\\overline{L_2}$) resulta em uma linguagem regular. Como a diferença pode ser escrita estritamente em termos de interseção e complemento, a classe é fechada para a diferença."
+      },
+      {
+        "questao": "11",
+        "tipo": "dissertativa",
+        "resposta": "Prova por Gramáticas Regulares.",
+        "explicacao": "* **União:** Dadas $G_1$ e $G_2$ com produções $S_1 \\to \\dots$ e $S_2 \\to \\dots$, criamos $S \\to S_1 \\mid S_2$. A nova gramática permanece regular (linear).\r\n* **Concatenação:** Para $L_1 \\cdot L_2$, substituímos toda produção terminal $A \\to a$ de $G_1$ por $A \\to aS_2$. Assim, após gerar algo de $G_1$, a gramática é obrigada a começar a gerar de $G_2$, mantendo a estrutura linear."
+      },
+      {
+        "questao": "12",
+        "tipo": "dissertativa",
+        "resposta": "$L$ não é regular (pelo Lema do Bombeamento), mas é Livre de Contexto.",
+        "explicacao": "1. **Não regular:** Ao escolher uma palavra $s = 0^p 10^p$ (onde $p$ é a constante de bombeamento), qualquer bombeamento em $y$ (que consistirá apenas de zeros iniciais) alterará a quantidade de zeros antes do '1', quebrando a igualdade com os zeros após o '1'.\r\n2. **Livre de Contexto:** Pode ser gerada pela gramática $S \\to 0S0 \\mid 1$, que é uma gramática livre de contexto clássica para igualdade de símbolos em extremidades."
+      },
+      {
+        "questao": "13",
+        "tipo": "dissertativa",
+        "resposta": "Autômato com Pilha (AP) Não-Determinístico.",
+        "explicacao": "O AP deve empilhar os símbolos lidos da primeira metade da cadeia ($w$). Como não há um marcador central, o autômato usa não-determinismo para \"adivinhar\" o meio da cadeia. A partir desse ponto, ele passa a desempilhar e comparar com os símbolos que chegam ($w^R$). Se a pilha esvaziar exatamente ao fim da cadeia, ela é aceita."
+      },
+      {
+        "questao": "14",
+        "tipo": "dissertativa",
+        "resposta": "A afirmação é verdadeira.",
+        "explicacao": "A interseção de uma Linguagem Regular com uma Livre de Contexto é sempre Livre de Contexto. Isso se prova construindo um autômato que é o produto cartesiano do Autômato Finito (da LR) com o Autômato de Pilha (da LLC). O novo autômato usará a pilha do AP original enquanto simula as transições de estado de ambos simultaneamente."
+      },
+      {
+        "questao": "15",
+        "tipo": "dissertativa",
+        "resposta": "Um A2P possui dois dispositivos de pilha independentes.",
+        "explicacao": "A linguagem $a^n b^n c^n$ requer a contagem de três elementos iguais, o que um AP comum não faz. Com duas pilhas:\r\n\r\n1. Ao ler 'a's, empilha em $P_1$ e $P_2$.\r\n2. Ao ler 'b's, desempilha de $P_1$. Se sobrar ou faltar, rejeita.\r\n3. Ao ler 'c's, desempilha de $P_2$. Se sobrar ou faltar, rejeita.\r\nO diagrama de estados conteria transições do tipo $(q, a, \\epsilon, \\epsilon) \\to (q, A, A)$ significando: lê 'a', empilha 'A' na pilha 1 e na pilha 2."
+      }
+    ]
+  }
+]

@@ -1,0 +1,236 @@
+[
+  {
+    "imagem": "Aula_01_-_Preliminares_-_Algoritmos_pag001.png",
+    "data": "2026-03-08T02:08:36.776932",
+    "questoes": [
+      {
+        "questao": "1 (Número Faltante)",
+        "tipo": "dissertativa",
+        "resposta": "O algoritmo deve retornar o valor resultante da subtração entre a soma teórica de uma Progressão Aritmética de $0$ a $n$ e a soma real dos elementos presentes no vetor.",
+        "explicacao": "O algoritmo deve retornar o valor resultante da subtração entre a soma teórica de uma Progressão Aritmética de $0$ a $n$ e a soma real dos elementos presentes no vetor.\r\n\r\nDado que o vetor contém $n$ números distintos no intervalo $[0, n]$, apenas um número está faltando. A soma de todos os números de $0$ a $n$ é dada pela fórmula de Gauss: $S = \\frac{n(n + 1)}{2}$. Ao somar todos os elementos presentes no vetor `nums` e subtrair esse valor de $S$, o resultado será exatamente o número que não apareceu.\r\n\r\n **Exemplo 1:** $n=3$. Soma esperada: $\\frac{3(4)}{2} = 6$. Soma real: $3+0+1=4$. Faltante: $6-4=2$.\r\n\r\nint encontrarNumeroFaltante(int nums[], int n) {\r\n    // n é o tamanho do array recebido\r\n    // O intervalo completo é de 0 até n, portanto a soma esperada usa n\r\n    int somaEsperada = (n * (n + 1)) / 2;\r\n    int somaReal = 0;\r\n\r\n    // Somamos todos os elementos presentes no array\r\n    for (int i = 0; i < n; i++) {\r\n        somaReal += nums[i];\r\n    }\r\n\r\n    // O retorno é a diferença entre a soma teórica e a real\r\n    return somaEsperada - somaReal;\r\n}"
+      },
+      {
+        "questao": "2 (Duas Somas)",
+        "tipo": "dissertativa",
+        "resposta": "Para cada elemento $x$ no vetor `nums`, calcula-se o complemento necessário ($alvo - x$). Se o complemento já foi visto anteriormente (armazenado em um mapa/dicionário), retornam-se os índices de ambos.",
+        "explicacao": "Para cada elemento $x$ no vetor `nums`, calcula-se o complemento necessário ($alvo - x$). Se o complemento já foi visto anteriormente (armazenado em um mapa/dicionário), retornam-se os índices de ambos.\r\n\r\nO problema pede os índices de dois números que somam ao `alvo`. Uma abordagem eficiente utiliza uma Tabela Hash (Dicionário) para armazenar os valores já percorridos e seus respectivos índices.\r\n\r\n **Exemplo 1:** `nums = [2, 7, 11, 15]`, `alvo = 9`.\r\n1. Primeiro elemento: $2$. Complemento: $9 - 2 = 7$. $7$ não está no mapa. Guarda-se $\\{2: 0\\}$.\r\n2. Segundo elemento: $7$. Complemento: $9 - 7 = 2$. $2$ está no mapa no índice $0$.\r\n3. Retorno: $[0, 1]$.\r\n\r\n// A função recebe um vetor, o tamanho do vetor e o valor do alvo\r\nvoid duasSomas(int nums[], int n, int alvo) {\r\n    // Primeiro loop: percorre cada elemento do array (o primeiro número do par)\r\n    for (int i = 0; i < n; i++) {\r\n        \r\n        // Segundo loop: percorre os elementos APÓS o índice 'i' (o segundo número)\r\n        // Começamos em j = i + 1 para nunca usar o mesmo elemento duas vezes\r\n        for (int j = i + 1; j < n; j++) {\r\n            \r\n            // Verifica se a soma do par atual é igual ao alvo desejado\r\n            if (nums[i] + nums[j] == alvo) {\r\n                // Se encontrar, imprime os índices e encerra a função\r\n                printf(\"[%d, %d]\\n\", i, j);\r\n                return; \r\n            }\r\n        }\r\n    }\r\n    \r\n    // Caso o loop termine sem encontrar nada (embora o enunciado garanta uma solução)\r\n    printf(\"Nenhuma solucao encontrada.\\n\");\r\n}"
+      },
+      {
+        "questao": "3 (Contém Duplicado)",
+        "tipo": "dissertativa",
+        "resposta": "O algoritmo deve percorrer o vetor e utilizar um conjunto (*Set*) para armazenar os números encontrados. Se, ao tentar inserir um número, ele já existir no conjunto, retorna-se `true`. Se o laço terminar sem repetições, retorna-se `false`.",
+        "explicacao": "A verificação de duplicatas é feita de forma otimizada comparando a presença de cada elemento em uma estrutura de dados que permite busca em tempo constante.\r\n\r\n* **Exemplo 1:** `[1, 2, 3, 1]`. O número $1$ é inserido, depois o $2$, depois o $3$. Ao chegar no último elemento ($1$), o algoritmo detecta que ele já está no conjunto e retorna `true`.\r\n* **Exemplo 2:** `[1, 2, 3, 4]`. Todos são inseridos no conjunto sem colisões. Retorna `false`."
+      }
+    ]
+  },
+  {
+    "imagem": "Aula_01_-_Preliminares_-_Algoritmos_pag002.png",
+    "data": "2026-03-08T02:13:39.073967",
+    "questoes": [
+      {
+        "questao": "** 4 (Número Único)",
+        "tipo": "** dissertativa",
+        "resposta": "** O elemento único é encontrado percorrendo o vetor e identificando o número que não possui par. Uma solução eficiente utiliza a operação lógica XOR em todos os elementos; o resultado final será o número único.",
+        "explicacao": "** Como todos os números aparecem duas vezes, exceto um, se aplicarmos a operação XOR em todos eles, os pares se anularão (pois $x \\oplus x = 0$) e restará apenas o valor que aparece uma única vez.\r\n\r\n* No Exemplo 1: $[2, 2, 1] \\rightarrow 2 \\oplus 2 \\oplus 1 = 0 \\oplus 1 = 1$.\r\n* No Exemplo 2: $[4, 1, 2, 1, 2] \\rightarrow 4 \\oplus (1 \\oplus 1) \\oplus (2 \\oplus 2) = 4 \\oplus 0 \\oplus 0 = 4$."
+      },
+      {
+        "questao": "** 5 (Mais um)",
+        "tipo": "** dissertativa",
+        "resposta": "** Deve-se percorrer o vetor da direita para a esquerda. Soma-se 1 ao último dígito. Se o resultado for 10, define-se o dígito como 0 e leva-se o \"vai um\" para o próximo dígito à esquerda. Se ao final houver um \"vai um\" restante (ex: $[9, 9] \\rightarrow [1, 0, 0]$), adiciona-se 1 ao início do vetor.",
+        "explicacao": "** O exercício simula a adição aritmética manual.\r\n\r\n* No Exemplo 1: $[1, 2, 3] + 1 = [1, 2, 4]$.\r\n* No Exemplo 3: O vetor $[9]$ torna-se $[1, 0]$ porque $9 + 1 = 10$, gerando um novo dígito à esquerda."
+      },
+      {
+        "questao": "** 6 (Mover Zeros)",
+        "tipo": "** dissertativa",
+        "resposta": "** Deve-se utilizar dois ponteiros ou percorrer o vetor preenchendo as posições iniciais com números diferentes de zero e, em seguida, preencher o restante do vetor com zeros, tudo isso no próprio vetor original (in-place).",
+        "explicacao": "** O objetivo é manter a ordem relativa.\r\n\r\n* No Exemplo 1: Entrada $[0, 1, 0, 3, 12]$. Primeiro identificamos os não-nulos: $1, 3, 12$. Eles ocupam as três primeiras posições. As posições restantes são preenchidas com $0$. Resultado: $[1, 3, 12, 0, 0]$."
+      },
+      {
+        "questao": "** 7 (Interseção de Dois Vetores)",
+        "tipo": "** dissertativa",
+        "resposta": "** O resultado é um novo vetor contendo os elementos que estão presentes em ambos os vetores de entrada ($nums1$ e $nums2$), garantindo que cada elemento no resultado seja único (sem duplicatas).",
+        "explicacao": "** Para resolver, pode-se converter um dos vetores em um conjunto (Set) para busca rápida e verificar quais elementos do segundo vetor estão nesse conjunto.\r\n\r\n* No Exemplo 1: $nums1 = [1, 2, 2, 1]$, $nums2 = [2, 2]$. O único número comum a ambos é o $2$. Como o resultado deve ter elementos únicos, a saída é $[2]$.\r\n* No Exemplo 2: $nums1 = [4, 9, 5]$, $nums2 = [9, 4, 9, 8, 4]$. Os números comuns são $4$ e $9$. Resultado: $[9, 4]$ ou $[4, 9]$."
+      }
+    ]
+  },
+  {
+    "imagem": "Aula_01_-_Preliminares_-_Algoritmos_pag003.png",
+    "data": "2026-03-08T02:21:16.093564",
+    "questoes": [
+      {
+        "questao": "Exercício 8. (Troco da Limonada)",
+        "tipo": "dissertativa",
+        "resposta": "Para resolver este problema, é necessário manter um contador para as notas de R$ 5 e R$ 10. Para cada cliente:",
+        "explicacao": "O algoritmo é baseado em uma estratégia ambiciosa (greedy). Como as notas de R$ 5 são as únicas que servem de troco para quem paga com R$ 10 e também compõem o troco de R$ 20, devemos priorizar o uso da nota de R$ 10 ao dar troco de R$ 15, guardando as de R$ 5 para emergências. No **Exemplo 1**, temos notas suficientes para todos. No **Exemplo 2**, ao chegar no último cliente (R$ 20), temos duas notas de R$ 10, mas nenhuma de R$ 5 para completar o troco de R$ 15, resultando em `false`."
+      },
+      {
+        "questao": "Exercício 9. (Último Peso de Pedra)",
+        "tipo": "dissertativa",
+        "resposta": "O resultado para o exemplo fornecido é 1. O processo segue a lógica de sempre reduzir o conjunto de pedras comparando as duas maiores:",
+        "explicacao": "O problema descreve o funcionamento de uma estrutura de dados de \"Fila de Prioridade\" (ou Max-Heap). A cada passo, extraímos os dois maiores valores ($y$ e $x$). Se forem diferentes, a diferença ($y - x$) é reinserida no conjunto. O jogo continua até que reste apenas uma pedra ou nenhuma (retornando 0). A simulação do Exemplo 1 demonstra que, após sucessivas quebras, a pedra de peso 1 é a única que resta."
+      }
+    ]
+  },
+  {
+    "imagem": "Aula_01_-_Preliminares_-_Algoritmos_pag004.png",
+    "data": "2026-03-08T02:27:50.845071",
+    "questoes": [
+      {
+        "questao": "Exercício 10",
+        "tipo": "dissertativa",
+        "resposta": "Uma maneira eficiente de resolver este problema é utilizar a técnica de **dois ponteiros** (um no início e outro no fim do vetor).",
+        "explicacao": "O problema solicita a reordenação de um vetor para que todos os números pares apareçam antes dos ímpares. A ordem relativa entre os pares (ou entre os ímpares) não importa, como indicado na explicação do Exemplo 1. A estratégia de dois ponteiros permite resolver o problema \"in-place\" (sem gastar memória extra relevante) com uma complexidade de tempo linear, percorrendo o vetor apenas uma vez."
+      }
+    ]
+  },
+  {
+    "imagem": "Aula_02_-_Preliminares_-_Algoritmos_pag001.png",
+    "data": "2026-03-08T02:32:45.408180",
+    "questoes": [
+      {
+        "questao": "1",
+        "tipo": "dissertativa",
+        "resposta": "```python",
+        "explicacao": "Um número primo é divisível apenas por 1 e por ele mesmo. O algoritmo otimizado verifica se o número é divisível por 2 ou 3 e, em seguida, testa divisores ímpares a partir de 5. A verificação vai até $\\sqrt{n}$, pois se $n$ tiver um divisor, ele deve ser menor ou igual à sua raiz quadrada."
+      },
+      {
+        "questao": "2",
+        "tipo": "dissertativa",
+        "resposta": "```python",
+        "explicacao": "O Algoritmo de Euclides baseia-se no princípio de que o MDC de dois números não muda se o maior número for substituído pela diferença entre ele e o menor, ou mais eficientemente, pelo resto da divisão ($a \\pmod{b}$). O processo é repetido até que o resto seja zero; o último divisor não nulo é o MDC."
+      },
+      {
+        "questao": "3",
+        "tipo": "dissertativa",
+        "resposta": "```python",
+        "explicacao": "O algoritmo calcula a soma dos quadrados dos dígitos repetidamente. Para evitar um loop infinito (caso de números \"infelizes\"), utilizamos um conjunto (`set`) para armazenar os números já gerados. Se o número chegar a 1, ele é feliz; se entrar em uma sequência que já ocorreu anteriormente sem chegar a 1, ele é infeliz."
+      },
+      {
+        "questao": "4",
+        "tipo": "dissertativa",
+        "resposta": "```python",
+        "explicacao": "Como os vetores já estão ordenados, utilizamos dois ponteiros ($i$ e $j$) para comparar os elementos atuais de cada vetor. O menor elemento é adicionado ao novo vetor e o respectivo ponteiro avança. Ao final, se restarem elementos em qualquer um dos vetores, eles são anexados ao final do resultado."
+      },
+      {
+        "questao": "5",
+        "tipo": "dissertativa",
+        "resposta": "```python",
+        "explicacao": "Para verificar se $s$ é subsequência de $t$, percorremos a string $t$ procurando pelos caracteres de $s$ na ordem em que aparecem. Usamos um ponteiro para $s$ que só avança quando encontramos o caractere correspondente em $t$. Se ao final o ponteiro de $s$ percorreu toda a string, então $s$ é uma subsequência válida."
+      }
+    ]
+  },
+  {
+    "imagem": "Aula_02_-_Preliminares_-_Algoritmos_pag002.png",
+    "data": "2026-03-08T02:35:43.666928",
+    "questoes": [
+      {
+        "questao": "6",
+        "tipo": "dissertativa",
+        "resposta": "O algoritmo mais eficiente para este problema é o **Algoritmo de Votação de Boyer-Moore**, que possui complexidade de tempo $O(n)$ e espaço $O(1)$.",
+        "explicacao": "O algoritmo mantém uma variável `candidato` e um `contador`. Percorremos o vetor: se o contador for zero, definimos o elemento atual como candidato. Se o próximo elemento for igual ao candidato, incrementamos o contador; caso contrário, decrementamos. Como o enunciado garante que o elemento majoritário sempre existe (aparece mais de $n/2$ vezes), o candidato restante ao final do processo será o elemento correto."
+      },
+      {
+        "questao": "7",
+        "tipo": "dissertativa",
+        "resposta": "O algoritmo consiste em três laços aninhados:",
+        "explicacao": "A multiplicação de matrizes exige que o número de colunas da primeira seja igual ao número de linhas da segunda. Cada elemento $C_{ij}$ é o produto escalar da linha $i$ de $A$ pela coluna $j$ de $B$. A complexidade resultante é $O(m \\times n \\times p)$."
+      },
+      {
+        "questao": "8",
+        "tipo": "dissertativa",
+        "resposta": "Para validar o tabuleiro, deve-se percorrer a matriz e verificar três condições simultâneas:",
+        "explicacao": "O algoritmo ignora células vazias e valida apenas os dígitos preenchidos. Se qualquer número for encontrado duplicado em sua respectiva linha, coluna ou bloco 3x3, o tabuleiro é inválido."
+      },
+      {
+        "questao": "9",
+        "tipo": "dissertativa",
+        "resposta": "A solução utiliza **Busca em Profundidade (DFS) com Backtracking**.",
+        "explicacao": "Para cada célula da matriz que coincide com a primeira letra da palavra, inicia-se uma busca recursiva para as quatro direções (cima, baixo, esquerda, direita). Para evitar usar a mesma célula duas vezes, marca-se a célula atual como visitada (ou altera-se temporariamente seu valor) e, caso a busca por aquele caminho não encontre a palavra completa, desfaz-se a marcação (backtracking) para permitir outras combinações."
+      },
+      {
+        "questao": "10",
+        "tipo": "dissertativa",
+        "resposta": "O algoritmo deve:",
+        "explicacao": "O problema define o \"Número da Sorte\" (também conhecido como Ponto de Sela em matrizes) como um valor que é simultaneamente o mínimo de sua linha e o máximo de sua coluna. Como os números são distintos, o processo de verificação é direto e não há ambiguidade na busca pelos extremos."
+      }
+    ]
+  },
+  {
+    "imagem": "aula_3_e_4_-_Notacao_Assintotica_-_Exercicios_pag001.png",
+    "data": "2026-03-08T02:38:41.904844",
+    "questoes": [
+      {
+        "questao": "1",
+        "tipo": "dissertativa",
+        "resposta": "**Sim** para $10n = O(n)$; **Não** para $10n^2 = O(n)$; **Sim** para $10n^{55} = O(2^n)$.",
+        "explicacao": "1. $10n = O(n)$ é verdadeiro pois $10n \\leq 10n$ para todo $n \\geq 1$ ($c=10$). A ordem de crescimento é a mesma (linear).\r\n2. $10n^2 = O(n)$ é falso. Uma função quadrática cresce mais rápido que uma linear. Não existe constante $c$ que satisfaça $10n^2 \\leq cn$ para $n$ tendendo ao infinito, pois $10n \\leq c$ se tornaria falso para qualquer $n > c/10$.\r\n3. $10n^{55} = O(2^n)$ é verdadeiro. Funções exponenciais (como $2^n$) sempre superam funções polinomiais ($n^k$) conforme $n$ cresce, independentemente do valor da constante ou do expoente."
+      },
+      {
+        "questao": "2",
+        "tipo": "dissertativa",
+        "resposta": "**Sim** para $n^2 + 200n + 300 = O(n^2)$; **Não** para $n^2 - 200n + 300 = O(n)$.",
+        "explicacao": "1. Em polinômios, a notação $O$ é determinada pelo termo de maior grau. Como o termo dominante é $n^2$, a função é $O(n^2)$.\r\n2. $n^2 - 200n + 300 = O(n)$ é falso porque o termo de maior grau é quadrático ($n^2$), que cresce estritamente mais rápido que a função linear $n$."
+      },
+      {
+        "questao": "3",
+        "tipo": "dissertativa",
+        "resposta": "**Não** é $O(n)$; **Sim**, é $O(n^2)$.",
+        "explicacao": "A função dada é $\\frac{3}{2}n^2 + \\frac{7}{2}n + 4$.\r\n\r\n1. Não é $O(n)$ porque o termo $n^2$ domina o crescimento.\r\n2. É $O(n^2)$ porque, para grandes valores de $n$, os termos de menor grau tornam-se insignificantes e a função se comporta como $c \\cdot n^2$."
+      },
+      {
+        "questao": "4",
+        "tipo": "dissertativa",
+        "resposta": "**Não**, é falso.",
+        "explicacao": "A função $n^3 - 999999n^2 - 1000000$ possui como termo dominante $n^3$. Na análise assintótica, ignoramos os coeficientes e focamos no grau. Como $n^3$ cresce mais rápido que $n^2$, a afirmação $f(n) = O(n^2)$ é incorreta; a correta seria $O(n^3)$."
+      },
+      {
+        "questao": "5",
+        "tipo": "dissertativa",
+        "resposta": "**Demonstração concluída.** $C_{n,2} = O(n^2)$, $C_{n,3} = O(n^3)$ e, para $k$ constante, $C_{n,k} = O(n^k)$.",
+        "explicacao": "1. $C_{n,2} = \\frac{n(n-1)}{2} = \\frac{n^2 - n}{2}$, que é um polinômio de grau 2, logo $O(n^2)$.\r\n2. $C_{n,3} = \\frac{n(n-1)(n-2)}{6} = \\frac{n^3 - 3n^2 + 2n}{6}$, polinômio de grau 3, logo $O(n^3)$.\r\n3. Generalizando, $C_{n,k} = \\frac{n!}{k!(n-k)!} = \\frac{n(n-1)...(n-k+1)}{k!}$. Este é um polinômio em $n$ de grau $k$. Portanto, $C_{n,k} = O(n^k)$."
+      },
+      {
+        "questao": "6",
+        "tipo": "dissertativa",
+        "resposta": "**Sim** para $2^{n+1} \\in O(2^n)$; **Não** para $3^n \\in O(2^n)$.",
+        "explicacao": "1. $2^{n+1} = 2 \\cdot 2^n$. Podemos escolher $c=2$ para satisfazer a definição de $O(2^n)$. Elas possuem a mesma taxa de crescimento.\r\n2. $3^n \\in O(2^n)$ é falso. Como a base 3 é maior que a base 2, a razão $\\frac{3^n}{2^n} = (1.5)^n$ tende ao infinito quando $n \\to \\infty$. Nenhuma constante $c$ limita esse crescimento."
+      },
+      {
+        "questao": "7",
+        "tipo": "dissertativa",
+        "resposta": "**Sim** para ambas as afirmações.",
+        "explicacao": "Pela fórmula de mudança de base, $\\log_a n = \\frac{\\log_b n}{\\log_b a}$. Isso significa que logs de bases diferentes diferem apenas por uma constante multiplicativa ($1/\\log_b a$). Na notação assintótica, constantes são ignoradas, logo $\\log_2 n$ e $\\log_3 n$ estão na mesma classe de complexidade."
+      },
+      {
+        "questao": "8",
+        "tipo": "dissertativa",
+        "resposta": "**Prova concluída.** $5n^2 + 7n = \\Theta(n^2)$.",
+        "explicacao": "Para ser $\\Theta(n^2)$, a função deve ser $O(n^2)$ e $\\Omega(n^2)$.\r\n\r\n1. **Limite Superior ($O$):** $5n^2 + 7n \\leq 5n^2 + 7n^2 = 12n^2$ para $n \\geq 1$. (Ex: $c_2 = 12$).\r\n2. **Limite Inferior ($\\Omega$):** $5n^2 + 7n \\geq 5n^2$ para $n \\geq 1$. (Ex: $c_1 = 5$).\r\nComo existem $c_1, c_2$ e $n_0$ que satisfazem $c_1 n^2 \\leq 5n^2 + 7n \\leq c_2 n^2$, a função é $\\Theta(n^2)$."
+      },
+      {
+        "questao": "9",
+        "tipo": "dissertativa",
+        "resposta": "**Prova concluída.** $4 \\log n \\in O(n)$.",
+        "explicacao": "Assintoticamente, qualquer função logarítmica cresce mais lentamente que qualquer função linear. Para $n$ suficientemente grande, $\\log n < n$. Multiplicar por uma constante 4 não altera essa hierarquia de crescimento. Formalmente, $\\lim_{n \\to \\infty} \\frac{4 \\log n}{n} = 0$."
+      },
+      {
+        "questao": "10",
+        "tipo": "dissertativa",
+        "resposta": "Como a lista de funções $g_i$ não foi fornecida na imagem, não é possível determinar a relação específica para cada par.",
+        "explicacao": "O exercício 10 solicita a comparação de pares de funções de uma lista ($g_1$ a $g_{11}$), mas essa lista de funções não consta na página 1 do documento enviado."
+      }
+    ]
+  },
+  {
+    "imagem": "aula_3_e_4_-_Notacao_Assintotica_-_Exercicios_pag002.png",
+    "data": "2026-03-08T10:58:57.789142",
+    "questoes": [
+      {
+        "questao": "Análise de Funções Assintóticas (Geral)",
+        "tipo": "dissertativa",
+        "resposta": "A ordem crescente de complexidade das funções apresentadas, após simplificação, é:",
+        "explicacao": "Primeiramente, simplificamos as funções usando os \"fatos\" fornecidos na imagem:\r\n\r\n* $g_1 = n^{\\frac{1}{\\log n}} = 2$ (Constante)\r\n* $g_2 = \\ln \\ln n$ (Log-logarítmica)\r\n* $g_3 = (\\ln n)^2$ (Polilogarítmica)\r\n* $g_4 = n$ (Linear)\r\n* $g_5 = 2^{\\log n} = n$ (Linear)\r\n* $g_6 = n \\log n$ (Linear-logarítmica)\r\n* $g_7 = \\log(n!) = \\Theta(n \\log n)$ (Linear-logarítmica)\r\n* $g_8 = n^2$ (Quadrática)\r\n* $g_9 = 4^{\\log n} = n^2$ (Quadrática)\r\n* $g_{10} = (1,5)^n$ (Exponencial menor)\r\n* $g_{11} = 2^n$ (Exponencial média)\r\n* $g_{12} = e^n$ (Exponencial maior, onde $e \\approx 2,718$)\r\n\r\nComparando as taxas de crescimento:\r\n\r\n1. **Constante ($g_1$):** Crescimento nulo.\r\n2. **Logarítmicas ($g_2, g_3$):** $g_2$ cresce muito mais devagar que $g_3$.\r\n3. **Lineares ($g_4, g_5$):** Ambas são $O(n)$.\r\n4. **Linear-logarítmicas ($g_6, g_7$):** Pela aproximação de Stirling e os fatos dados, ambas são $\\Theta(n \\log n)$.\r\n5. **Polinomiais ($g_8, g_9$):** Ambas são quadráticas $n^2$.\r\n6. **Exponenciais ($g_{10}, g_{11}, g_{12}$):** Ordenadas pela base: $1,5 < 2 < 2,718$."
+      }
+    ]
+  }
+]

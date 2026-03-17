@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Resoluções - {{ topic }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- MathJax para LaTeX -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+    </script>
+    <style>
+        /* (mesmo estilo anterior) */
+        .resize-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: #f0f0f0;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        .resize-btn {
+            padding: 0.5rem 1rem;
+            background-color: #004a99;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .resize-btn:hover {
+            background-color: #003377;
+        }
+        .resize-slider {
+            width: 200px;
+            cursor: pointer;
+        }
+        .resize-value {
+            font-weight: bold;
+            color: #004a99;
+            min-width: 60px;
+            text-align: center;
+        }
+        .two-columns {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: nowrap;
+        }
+        .image-col {
+            flex: 0 0 50%;
+            min-width: 200px;
+            transition: flex 0.2s ease;
+        }
+        .resolution-col {
+            flex: 0 0 50%;
+            min-width: 300px;
+            max-width: 100%;
+            overflow: hidden;
+            transition: flex 0.2s ease;
+            padding-right: 15px;
+        }
+        .question-image {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: white;
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+        .sidebar {
+            width: 220px;
+            flex-shrink: 0;
+        }
+        .content {
+            flex: 1;
+            overflow: hidden;
+        }
+        .whiteboard-container {
+            width: 100%;
+            max-width: 100%;
+            overflow: auto;
+            border: 1px solid #ccc;
+            background: white;
+            position: relative;
+        }
+        canvas {
+            display: block;
+            background: white;
+            cursor: crosshair;
+            outline: none;
+        }
+        .image-controls {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .image-controls label {
+            display: inline-block;
+            width: 60px;
+        }
+        .image-controls input[type=range] {
+            width: 150px;
+            vertical-align: middle;
+        }
+        .image-controls button {
+            margin: 2px;
+            padding: 4px 8px;
+        }
+        .image-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .image-actions .button {
+            flex: 0 0 auto;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal h2 {
+            margin-top: 0;
+            color: #004a99;
+        }
+        .modal .form-group {
+            margin-bottom: 1rem;
+        }
+        .modal label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: bold;
+        }
+        .modal input, .modal textarea, .modal select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .modal button {
+            background-color: #004a99;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal button:hover {
+            background-color: #003377;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+        #eraser-indicator {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 2px solid black;
+            border-radius: 0;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            transform: translate(-50%, -50%);
+        }
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: blue;
+            border: 1px solid white;
+            z-index: 1001;
+        }
+        .title-with-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .rename-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #004a99;
+            padding: 0;
+        }
+        .rename-btn:hover {
+            color: #003377;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            align-items: center;
+        }
+        .whiteboard-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <h2>Navegação</h2>
+            <p><a href="{{ url_for('topic.home') }}">⬅️ Todos os tópicos</a></p>
+            <p><strong>Página atual:</strong> {{ current_img }}</p>
+            <div class="nav-buttons">
+                <a href="{{ url_for('topic.ver_topic', topic_name=topic, idx=current_idx-1, q=0) }}" 
+                   class="button {{ 'disabled' if current_idx == 0 }}">
+                   ⬅️ Anterior
+                </a>
+                <a href="{{ url_for('topic.ver_topic', topic_name=topic, idx=current_idx+1, q=0) }}" 
+                   class="button {{ 'disabled' if current_idx == total-1 }}">
+                   Próximo ➡️
+                </a>
+            </div>
+            
+            {% if questoes %}
+            <div class="question-selector">
+                <label for="questao-select">Selecione a questão:</label>
+                <select id="questao-select" onchange="location.href = this.value;">
+                    {% for q in questoes %}
+                        <option value="{{ url_for('topic.ver_topic', topic_name=topic, idx=current_idx, q=loop.index0) }}" 
+                                {% if loop.index0 == q_idx %}selected{% endif %}>
+                            Questão {{ q.get('questao', 'S/N') }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <p>Nenhuma questão cadastrada para esta imagem.</p>
+            {% endif %}
+            
+            <!-- Seção removida: não exibir lista de imagens do JSON -->
+
+            <div style="margin-top: 20px;">
+                <a href="{{ url_for('upload.upload_pdf', topic_name=topic) }}" class="button" style="display: block; margin-bottom: 5px;">📤 Upload PDF</a>
+                <a href="{{ url_for('upload.upload_images', topic_name=topic) }}" class="button" style="display: block; margin-bottom: 5px;">🖼️ Upload Imagens</a>
+                <form method="POST" action="{{ url_for('gemini.processar_gemini', topic_name=topic) }}" style="display: inline;">
+                    <button type="submit" class="button" style="width: 100%;">🤖 Processar com Gemini</button>
+                </form>
+                <a href="{{ url_for('download.download_all_images', topic_name=topic) }}" class="button" style="display: block; margin-top: 5px;">📥 Download Todas Imagens</a>
+                <a href="{{ url_for('download.download_text_resolutions', topic_name=topic) }}" class="button" style="display: block; margin-top: 5px;">📥 Baixar resoluções (texto)</a>
+                <a href="{{ url_for('download.download_whiteboards', topic_name=topic) }}" class="button" style="display: block; margin-top: 5px;">📥 Baixar quadros brancos (zip)</a>
+            </div>
+            
+        </aside>
+
+        <!-- Conteúdo principal -->
+        <main class="content">
+            <button class="toggle-sidebar-btn" id="toggleSidebarBtn">☰</button>
+            
+            <div class="title-with-button">
+                <h1>Resolução de Questões - {{ topic }}</h1>
+                <button class="rename-btn" onclick="openRenameModal()" title="Renomear tópico">✏️</button>
+            </div>
+            <hr>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="resize-controls">
+                <button class="resize-btn" onclick="adjustColumns(-10)">⇦ Imagem -</button>
+                <span class="resize-value" id="imageWidthValue">50%</span>
+                <input type="range" id="columnSlider" class="resize-slider" min="20" max="80" value="50" step="1" oninput="updateColumns(this.value)">
+                <span class="resize-value" id="resolutionWidthValue">50%</span>
+                <button class="resize-btn" onclick="adjustColumns(10)">Resolução + ⇨</button>
+            </div>
+
+            <div class="two-columns" id="twoColumns">
+                <!-- Coluna da Imagem -->
+                <div class="image-col" id="imageCol">
+                    {% if current_img %}
+                        <img src="{{ url_for('static', filename='images/topics/' + topic + '/' + current_img) }}" 
+                             alt="Questão" 
+                             class="question-image">
+                        <p class="caption">Arquivo atual: {{ current_img }}</p>
+                        <div class="image-actions">
+                            <a href="{{ url_for('download.download_image', topic_name=topic, filename=current_img) }}" class="button">⬇️ Download Imagem</a>
+                            <button class="button" onclick="openAddQuestionModal()">➕ Adicionar Questão</button>
+                        </div>
+                    {% else %}
+                        <p>Nenhuma imagem disponível neste tópico.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Coluna da Resolução e Edição -->
+                <div class="resolution-col" id="resolutionCol">
+                    <h2>Conteúdo da Resolução</h2>
+                    
+                    <div class="resolution-tabs">
+                        <button class="tab-button active" data-tab="texto">Texto</button>
+                        <button class="tab-button" data-tab="whiteboard">Quadro Branco</button>
+                    </div>
+
+                    <!-- Aba de Texto -->
+                    <div id="tab-texto" class="tab-content active">
+                        {% if current_questao %}
+                            <form method="POST" action="{{ url_for('question.save') }}" class="edit-form">
+                                <input type="hidden" name="topic" value="{{ topic }}">
+                                <input type="hidden" name="image_filename" value="{{ current_img }}">
+                                <input type="hidden" name="idx" value="{{ current_idx }}">
+                                <input type="hidden" name="q_idx" value="{{ q_idx }}">
+                                
+                                <div class="resolucao-block">
+                                    <h3>Questão {{ current_questao.get('questao', 'S/N') }}</h3>
+                                    
+                                    {% if current_questao.get('tipo') %}
+                                        <p><strong>Tipo:</strong> {{ current_questao.get('tipo') }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="form-group">
+                                        <label for="resposta"><strong>Resposta:</strong></label>
+                                        <input type="text" id="resposta" name="resposta" 
+                                            value="{{ current_questao.get('resposta', '') }}" 
+                                            class="form-control">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="explicacao"><strong>Resolução (Markdown e LaTeX permitidos):</strong></label>
+                                        <textarea id="explicacao" name="explicacao" rows="10" 
+                                                class="form-control">{{ current_questao.get('explicacao', '') }}</textarea>
+                                        <small>Use **negrito**, *itálico* e LaTeX ($...$ ou $$...$$).</small>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button type="submit" class="save-button">💾 Salvar Alterações</button>
+                                        <form method="POST" action="{{ url_for('question.delete_question', topic_name=topic) }}" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja deletar esta questão?');">
+                                            <input type="hidden" name="image_filename" value="{{ current_img }}">
+                                            <input type="hidden" name="q_idx" value="{{ q_idx }}">
+                                            <input type="hidden" name="idx" value="{{ current_idx }}">
+                                            <button type="submit" class="delete-button">🗑️ Deletar Questão</button>
+                                        </form>
+                                        <a href="{{ url_for('download.download_question_text', topic_name=topic, image_filename=current_img, q_idx=q_idx) }}?idx={{ current_idx }}" class="button">📥 Baixar resolução (texto)</a>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <div class="preview-block">
+                                <h4>Pré-visualização da Resolução:</h4>
+                                <div class="latex-content">{{ current_questao.get('explicacao_html', '') | safe }}</div>
+                            </div>
+                        {% else %}
+                            <div class="info-message">
+                                Nenhuma questão encontrada para esta imagem.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Aba de Quadro Branco -->
+                    <div id="tab-whiteboard" class="tab-content">
+                        {% if current_questao %}
+                            <div class="whiteboard-container" id="whiteboardContainer">
+                                <canvas id="whiteboardCanvas" width="1000" height="2000" tabindex="0"></canvas>
+                            </div>
+                            <div class="whiteboard-controls">
+                                <button onclick="setColor('black')">⚫ Preto</button>
+                                <button onclick="setColor('red')">🔴 Vermelho</button>
+                                <button onclick="setColor('blue')">🔵 Azul</button>
+                                <button onclick="setColor('green')">🟢 Verde</button>
+                                <button onclick="setEraser()">🧽 Borracha</button>
+                                <button onclick="clearCanvas()">🗑️ Limpar</button>
+                                <button onclick="saveWhiteboard()">💾 Salvar Quadro</button>
+                                <button onclick="pasteImageToCanvas()">📋 Colar imagem</button>
+                                <button onclick="deleteSelectedImage()">🗑️ Deletar imagem selecionada</button>
+                                <button onclick="debugWhiteboard()">🔍 Debug (abrir imagem)</button>
+                                {% if current_questao and current_questao.whiteboard_img %}
+                                <a href="{{ url_for('download.download_question_whiteboard', topic_name=topic, image_filename=current_img, q_idx=q_idx) }}?idx={{ current_idx }}" class="button">📥 Baixar quadro</a>
+                                {% endif %}
+                            </div>
+                            <div class="eraser-size-control">
+                                <label for="eraserSize">Tamanho da borracha: <span id="eraserSizeValue">20</span>px</label>
+                                <input type="range" id="eraserSize" min="5" max="50" value="20" step="1">
+                            </div>
+                            <!-- Controles para imagem selecionada (ajuste fino) -->
+                            <div id="imageControls" class="image-controls" style="display:none;">
+                                <div>
+                                    <label>Escala:</label>
+                                    <input type="range" id="scaleSlider" min="0.1" max="3" step="0.1" value="1" oninput="updateSelectedImageTransform()">
+                                    <span id="scaleValue">1.0</span>
+                                </div>
+                                <div>
+                                    <label>Pos X:</label>
+                                    <input type="range" id="posXSlider" min="-500" max="500" step="1" value="0" oninput="updateSelectedImageTransform()">
+                                    <span id="posXValue">0</span>
+                                    <button onclick="moveSelectedImage(-10,0)">←</button>
+                                    <button onclick="moveSelectedImage(10,0)">→</button>
+                                </div>
+                                <div>
+                                    <label>Pos Y:</label>
+                                    <input type="range" id="posYSlider" min="-500" max="500" step="1" value="0" oninput="updateSelectedImageTransform()">
+                                    <span id="posYValue">0</span>
+                                    <button onclick="moveSelectedImage(0,-10)">↑</button>
+                                    <button onclick="moveSelectedImage(0,10)">↓</button>
+                                </div>
+                            </div>
+                            <div class="whiteboard-instructions">
+                                <small>Desenhe com o mouse. Use Ctrl+Z para desfazer traços. Para colar uma imagem (Ctrl+V), clique nela para selecionar e arraste no centro para mover, nos cantos para redimensionar. Os sliders ajustam a imagem selecionada. Clique fora para desselecionar. Pressione Delete para remover a imagem selecionada.</small>
+                            </div>
+                        {% else %}
+                            <div class="info-message">Selecione uma questão para usar o quadro branco.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para renomear tópico -->
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRenameModal()">&times;</span>
+            <h2>Renomear Tópico</h2>
+            <form method="POST" action="{{ url_for('topic.rename_topic', old_name=topic) }}">
+                <div class="form-group">
+                    <label for="new_name">Novo nome:</label>
+                    <input type="text" id="new_name" name="new_name" value="{{ topic }}" required class="form-control">
+                </div>
+                <button type="submit" class="save-button">Renomear</button>
+                <button type="button" class="button" onclick="closeRenameModal()" style="background-color: #6c757d;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar questão manual -->
+    <div id="addQuestionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddQuestionModal()">&times;</span>
+            <h2>Adicionar Nova Questão</h2>
+            <form method="POST" action="{{ url_for('question.add_question', topic_name=topic) }}">
+                <input type="hidden" name="image_filename" value="{{ current_img }}">
+                <input type="hidden" name="idx" value="{{ current_idx }}">
+                
+                <div class="form-group">
+                    <label for="questao_num">Número da Questão *</label>
+                    <input type="text" id="questao_num" name="questao_num" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipo">Tipo (opcional)</label>
+                    <input type="text" id="tipo" name="tipo" placeholder="ex: objetiva, discursiva">
+                </div>
+                
+                <div class="form-group">
+                    <label for="resposta">Resposta (opcional)</label>
+                    <input type="text" id="resposta" name="resposta">
+                </div>
+                
+                <div class="form-group">
+                    <label for="explicacao">Resolução (Markdown/LaTeX) (opcional)</label>
+                    <textarea id="explicacao" name="explicacao" rows="6"></textarea>
+                </div>
+                
+                <button type="submit">Salvar Questão</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Indicador da borracha -->
+    <div id="eraser-indicator"></div>
+
+    <!-- Dados da aplicação (JSON) -->
+    <script id="app-data" type="application/json">
+        {
+            "currentQuestao": {{ current_questao | tojson if current_questao else 'null' }},
+            "currentImg": {{ current_img | tojson }},
+            "qIdx": {{ q_idx }},
+            "topic": {{ topic | tojson }},
+            "saveWhiteboardUrl": {{ url_for('question.save_whiteboard') | tojson }}
+        }
+    </script>
+
+    <script>
+        const appData = JSON.parse(document.getElementById('app-data').textContent);
+        const currentQuestao = appData.currentQuestao;
+        const currentImg = appData.currentImg;
+        const qIdx = appData.qIdx;
+        const topic = appData.topic;
+        const saveWhiteboardUrl = appData.saveWhiteboardUrl;
+
+        // ---------- Redimensionamento das colunas ----------
+        const imageCol = document.getElementById('imageCol');
+        const resolutionCol = document.getElementById('resolutionCol');
+        const columnSlider = document.getElementById('columnSlider');
+        const imageWidthValue = document.getElementById('imageWidthValue');
+        const resolutionWidthValue = document.getElementById('resolutionWidthValue');
+
+        function updateColumns(percent) {
+            const imagePercent = percent;
+            const resolutionPercent = 100 - percent;
+            imageCol.style.flex = `0 0 ${imagePercent}%`;
+            resolutionCol.style.flex = `0 0 ${resolutionPercent}%`;
+            imageWidthValue.textContent = imagePercent + '%';
+            resolutionWidthValue.textContent = resolutionPercent + '%';
+        }
+
+        function adjustColumns(delta) {
+            let newVal = parseInt(columnSlider.value) + delta;
+            newVal = Math.min(80, Math.max(20, newVal));
+            columnSlider.value = newVal;
+            updateColumns(newVal);
+        }
+
+        updateColumns(50);
+
+        // ---------- Modais ----------
+        function openRenameModal() {
+            document.getElementById('renameModal').style.display = 'block';
+        }
+        function closeRenameModal() {
+            document.getElementById('renameModal').style.display = 'none';
+        }
+
+        function openAddQuestionModal() {
+            document.getElementById('addQuestionModal').style.display = 'block';
+        }
+        function closeAddQuestionModal() {
+            document.getElementById('addQuestionModal').style.display = 'none';
+        }
+        window.onclick = function(event) {
+            const renameModal = document.getElementById('renameModal');
+            const addModal = document.getElementById('addQuestionModal');
+            if (event.target == renameModal) {
+                renameModal.style.display = 'none';
+            }
+            if (event.target == addModal) {
+                addModal.style.display = 'none';
+            }
+        }
+
+        // ---------- Canvas setup ----------
+        const canvas = document.getElementById('whiteboardCanvas');
+        if (canvas) {
+            const BITMAP_WIDTH = 1000;
+            const BITMAP_HEIGHT = 2000;
+
+            let ctx = canvas.getContext('2d');
+            let drawing = false;
+            let currentColor = 'black';
+            let brushSize = 3;
+            let eraserMode = false;
+            let undoStack = [];
+            const MAX_UNDO = 20;
+
+            // Lista de objetos de imagem
+            let imageObjects = [];
+            let selectedImageIndex = -1;
+
+            // Variáveis para interação com a imagem
+            let isDragging = false;
+            let dragType = null;
+            let dragStartX, dragStartY;
+            let dragStartImgX, dragStartImgY, dragStartScale;
+
+            // Inicializa o canvas com fundo branco
+            function initCanvas() {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                saveState();
+            }
+            initCanvas();
+
+            function saveState() {
+                const imageData = ctx.getImageData(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                undoStack.push(imageData);
+                if (undoStack.length > MAX_UNDO) undoStack.shift();
+            }
+
+            function undo() {
+                if (undoStack.length > 1) {
+                    undoStack.pop();
+                    ctx.putImageData(undoStack[undoStack.length-1], 0, 0);
+                    redrawAllImages();
+                }
+            }
+
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            function getCanvasCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = BITMAP_WIDTH / rect.width;
+                const scaleY = BITMAP_HEIGHT / rect.height;
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                const scrollLeft = canvas.parentElement.scrollLeft;
+                const scrollTop = canvas.parentElement.scrollTop;
+                const x = (clientX - rect.left + scrollLeft) * scaleX;
+                const y = (clientY - rect.top + scrollTop) * scaleY;
+                return { x, y };
+            }
+
+            function redrawAllImages() {
+                for (let obj of imageObjects) {
+                    const width = obj.originalWidth * obj.scale;
+                    const height = obj.originalHeight * obj.scale;
+                    ctx.drawImage(obj.img, obj.x, obj.y, width, height);
+                }
+                if (selectedImageIndex >= 0 && selectedImageIndex < imageObjects.length) {
+                    const obj = imageObjects[selectedImageIndex];
+                    const width = obj.originalWidth * obj.scale;
+                    const height = obj.originalHeight * obj.scale;
+                    ctx.strokeStyle = 'blue';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(obj.x, obj.y, width, height);
+                    ctx.fillStyle = 'blue';
+                    const handleSize = 8;
+                    ctx.fillRect(obj.x - handleSize/2, obj.y - handleSize/2, handleSize, handleSize);
+                    ctx.fillRect(obj.x + width - handleSize/2, obj.y - handleSize/2, handleSize, handleSize);
+                    ctx.fillRect(obj.x - handleSize/2, obj.y + height - handleSize/2, handleSize, handleSize);
+                    ctx.fillRect(obj.x + width - handleSize/2, obj.y + height - handleSize/2, handleSize, handleSize);
+                }
+            }
+
+            function fullRedraw() {
+                if (undoStack.length > 0) {
+                    ctx.putImageData(undoStack[undoStack.length-1], 0, 0);
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                }
+                redrawAllImages();
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                const coords = getCanvasCoords(e);
+                
+                let hitIndex = -1;
+                for (let i = imageObjects.length - 1; i >= 0; i--) {
+                    const obj = imageObjects[i];
+                    const width = obj.originalWidth * obj.scale;
+                    const height = obj.originalHeight * obj.scale;
+                    const handleSize = 10;
+                    
+                    if (i === selectedImageIndex) {
+                        if (Math.abs(coords.x - obj.x) < handleSize && Math.abs(coords.y - obj.y) < handleSize) {
+                            dragType = 'resize-tl'; isDragging = true; hitIndex = i; break;
+                        } else if (Math.abs(coords.x - (obj.x + width)) < handleSize && Math.abs(coords.y - obj.y) < handleSize) {
+                            dragType = 'resize-tr'; isDragging = true; hitIndex = i; break;
+                        } else if (Math.abs(coords.x - obj.x) < handleSize && Math.abs(coords.y - (obj.y + height)) < handleSize) {
+                            dragType = 'resize-bl'; isDragging = true; hitIndex = i; break;
+                        } else if (Math.abs(coords.x - (obj.x + width)) < handleSize && Math.abs(coords.y - (obj.y + height)) < handleSize) {
+                            dragType = 'resize-br'; isDragging = true; hitIndex = i; break;
+                        } else if (coords.x >= obj.x && coords.x <= obj.x + width && coords.y >= obj.y && coords.y <= obj.y + height) {
+                            dragType = 'move'; isDragging = true; hitIndex = i; break;
+                        }
+                    } else {
+                        if (coords.x >= obj.x && coords.x <= obj.x + width && coords.y >= obj.y && coords.y <= obj.y + height) {
+                            hitIndex = i; break;
+                        }
+                    }
+                }
+
+                if (hitIndex !== -1) {
+                    if (selectedImageIndex !== hitIndex) {
+                        selectedImageIndex = hitIndex;
+                        updateImageControls();
+                        fullRedraw();
+                    }
+                    if (isDragging) {
+                        dragStartX = coords.x;
+                        dragStartY = coords.y;
+                        const obj = imageObjects[selectedImageIndex];
+                        dragStartImgX = obj.x;
+                        dragStartImgY = obj.y;
+                        dragStartScale = obj.scale;
+                    }
+                    return;
+                }
+                
+                if (selectedImageIndex !== -1) {
+                    selectedImageIndex = -1;
+                    updateImageControls();
+                    fullRedraw();
+                }
+                
+                drawing = true;
+                ctx.beginPath();
+                ctx.moveTo(coords.x, coords.y);
+            }
+
+            function draw(e) {
+                e.preventDefault();
+                const coords = getCanvasCoords(e);
+                
+                if (isDragging && selectedImageIndex >= 0) {
+                    const obj = imageObjects[selectedImageIndex];
+                    const dx = coords.x - dragStartX;
+                    const dy = coords.y - dragStartY;
+                    
+                    if (dragType === 'move') {
+                        obj.x = dragStartImgX + dx;
+                        obj.y = dragStartImgY + dy;
+                        document.getElementById('posXSlider').value = obj.x;
+                        document.getElementById('posYSlider').value = obj.y;
+                        document.getElementById('posXValue').textContent = obj.x;
+                        document.getElementById('posYValue').textContent = obj.y;
+                    } else if (dragType === 'resize-br') {
+                        const newWidth = Math.max(10, (obj.originalWidth * dragStartScale) + dx);
+                        obj.scale = newWidth / obj.originalWidth;
+                        document.getElementById('scaleSlider').value = obj.scale.toFixed(2);
+                        document.getElementById('scaleValue').textContent = obj.scale.toFixed(2);
+                    } else if (dragType === 'resize-tr') {
+                        const newWidth = Math.max(10, (obj.originalWidth * dragStartScale) + dx);
+                        obj.scale = newWidth / obj.originalWidth;
+                        obj.y = dragStartImgY + dy;
+                        document.getElementById('scaleSlider').value = obj.scale.toFixed(2);
+                        document.getElementById('scaleValue').textContent = obj.scale.toFixed(2);
+                        document.getElementById('posYSlider').value = obj.y;
+                        document.getElementById('posYValue').textContent = obj.y;
+                    }
+                    
+                    fullRedraw();
+                    return;
+                }
+                
+                if (drawing) {
+                    ctx.strokeStyle = eraserMode ? '#ffffff' : currentColor;
+                    ctx.lineWidth = brushSize;
+                    ctx.lineTo(coords.x, coords.y);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(coords.x, coords.y);
+                }
+            }
+
+            function stopDrawing(e) {
+                e.preventDefault();
+                if (isDragging) {
+                    isDragging = false;
+                    dragType = null;
+                }
+                if (drawing) {
+                    drawing = false;
+                    ctx.beginPath();
+                    saveState();
+                }
+            }
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+            canvas.addEventListener('touchcancel', stopDrawing);
+
+            const eraserIndicator = document.getElementById('eraser-indicator');
+            const eraserSizeSlider = document.getElementById('eraserSize');
+            const eraserSizeSpan = document.getElementById('eraserSizeValue');
+
+            eraserSizeSlider.addEventListener('input', function() {
+                const size = this.value;
+                eraserSizeSpan.textContent = size;
+                if (eraserMode) {
+                    brushSize = parseInt(size);
+                    eraserIndicator.style.width = size + 'px';
+                    eraserIndicator.style.height = size + 'px';
+                }
+            });
+
+            window.setEraser = function() {
+                eraserMode = true;
+                brushSize = parseInt(eraserSizeSlider.value);
+                eraserIndicator.style.width = brushSize + 'px';
+                eraserIndicator.style.height = brushSize + 'px';
+                eraserIndicator.style.display = 'block';
+            };
+
+            window.setColor = function(color) {
+                currentColor = color;
+                eraserMode = false;
+                brushSize = 3;
+                eraserIndicator.style.display = 'none';
+            };
+
+            canvas.addEventListener('mousemove', function(e) {
+                if (eraserMode) {
+                    eraserIndicator.style.left = e.clientX + 'px';
+                    eraserIndicator.style.top = e.clientY + 'px';
+                }
+            });
+
+            canvas.addEventListener('mouseleave', function() {
+                eraserIndicator.style.display = 'none';
+            });
+
+            canvas.addEventListener('mouseenter', function(e) {
+                if (eraserMode) {
+                    eraserIndicator.style.display = 'block';
+                    eraserIndicator.style.left = e.clientX + 'px';
+                    eraserIndicator.style.top = e.clientY + 'px';
+                }
+            });
+
+            window.clearCanvas = function() {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                imageObjects = [];
+                selectedImageIndex = -1;
+                undoStack = [];
+                saveState();
+                updateImageControls();
+            };
+
+            function updateImageControls() {
+                const controls = document.getElementById('imageControls');
+                if (selectedImageIndex >= 0 && selectedImageIndex < imageObjects.length) {
+                    const obj = imageObjects[selectedImageIndex];
+                    document.getElementById('scaleSlider').value = obj.scale.toFixed(2);
+                    document.getElementById('posXSlider').value = obj.x;
+                    document.getElementById('posYSlider').value = obj.y;
+                    document.getElementById('scaleValue').textContent = obj.scale.toFixed(2);
+                    document.getElementById('posXValue').textContent = obj.x;
+                    document.getElementById('posYValue').textContent = obj.y;
+                    controls.style.display = 'block';
+                } else {
+                    controls.style.display = 'none';
+                }
+            }
+
+            window.updateSelectedImageTransform = function() {
+                if (selectedImageIndex < 0 || selectedImageIndex >= imageObjects.length) return;
+                const obj = imageObjects[selectedImageIndex];
+                obj.scale = parseFloat(document.getElementById('scaleSlider').value);
+                obj.x = parseInt(document.getElementById('posXSlider').value);
+                obj.y = parseInt(document.getElementById('posYSlider').value);
+                document.getElementById('scaleValue').textContent = obj.scale.toFixed(2);
+                document.getElementById('posXValue').textContent = obj.x;
+                document.getElementById('posYValue').textContent = obj.y;
+                fullRedraw();
+            };
+
+            window.moveSelectedImage = function(dx, dy) {
+                if (selectedImageIndex < 0) return;
+                const obj = imageObjects[selectedImageIndex];
+                obj.x += dx;
+                obj.y += dy;
+                document.getElementById('posXSlider').value = obj.x;
+                document.getElementById('posYSlider').value = obj.y;
+                document.getElementById('posXValue').textContent = obj.x;
+                document.getElementById('posYValue').textContent = obj.y;
+                fullRedraw();
+            };
+
+            window.deleteSelectedImage = function() {
+                if (selectedImageIndex < 0) return;
+                imageObjects.splice(selectedImageIndex, 1);
+                selectedImageIndex = -1;
+                updateImageControls();
+                fullRedraw();
+            };
+
+            window.pasteImageToCanvas = async function() {
+                try {
+                    const clipboardItems = await navigator.clipboard.read();
+                    for (const item of clipboardItems) {
+                        if (item.types.some(type => type.startsWith('image/'))) {
+                            const imageType = item.types.find(type => type.startsWith('image/'));
+                            const blob = await item.getType(imageType);
+                            const img = new Image();
+                            img.onload = function() {
+                                const scale = Math.min(
+                                    BITMAP_WIDTH / img.width * 0.8, 
+                                    BITMAP_HEIGHT / img.height * 0.8
+                                );
+                                const x = (BITMAP_WIDTH - img.width * scale) / 2;
+                                const y = (BITMAP_HEIGHT - img.height * scale) / 2;
+                                imageObjects.push({
+                                    img: img,
+                                    originalWidth: img.width,
+                                    originalHeight: img.height,
+                                    x: x,
+                                    y: y,
+                                    scale: scale
+                                });
+                                selectedImageIndex = imageObjects.length - 1;
+                                updateImageControls();
+                                fullRedraw();
+                            };
+                            img.src = URL.createObjectURL(blob);
+                            return;
+                        }
+                    }
+                    alert('Nenhuma imagem encontrada na área de transferência.');
+                } catch (err) {
+                    console.error('Falha ao ler área de transferência: ', err);
+                    alert('Não foi possível acessar a área de transferência. Tente usar Ctrl+V novamente.');
+                }
+            };
+
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'v') {
+                    const whiteboardTab = document.getElementById('tab-whiteboard');
+                    if (whiteboardTab && whiteboardTab.classList.contains('active')) {
+                        e.preventDefault();
+                        pasteImageToCanvas();
+                    }
+                }
+            });
+
+            canvas.addEventListener('paste', function(e) {
+                e.preventDefault();
+                pasteImageToCanvas();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Delete') {
+                    const whiteboardTab = document.getElementById('tab-whiteboard');
+                    if (whiteboardTab && whiteboardTab.classList.contains('active')) {
+                        const active = document.activeElement;
+                        if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+                            e.preventDefault();
+                            deleteSelectedImage();
+                        }
+                    }
+                }
+            });
+
+            let imageLoaded = false;
+            function loadWhiteboardImage() {
+                if (!currentQuestao || !currentQuestao.whiteboard_url || imageLoaded) return;
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = currentQuestao.whiteboard_url;
+                img.onload = function() {
+                    // Limpa e desenha a imagem carregada sobre fundo branco
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                    ctx.drawImage(img, 0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
+                    undoStack = [];
+                    saveState();
+                    imageLoaded = true;
+                };
+            }
+
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabName = this.dataset.tab;
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(`tab-${tabName}`).classList.add('active');
+                    if (tabName === 'whiteboard') loadWhiteboardImage();
+                });
+            });
+
+            if (document.getElementById('tab-whiteboard').classList.contains('active')) loadWhiteboardImage();
+
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+            });
+
+            // Função de debug para visualizar a imagem gerada
+            window.debugWhiteboard = function() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+                if (undoStack.length > 0) {
+                    tempCtx.putImageData(undoStack[undoStack.length-1], 0, 0);
+                } else {
+                    tempCtx.drawImage(canvas, 0, 0);
+                }
+                for (let obj of imageObjects) {
+                    const width = obj.originalWidth * obj.scale;
+                    const height = obj.originalHeight * obj.scale;
+                    tempCtx.drawImage(obj.img, obj.x, obj.y, width, height);
+                }
+                const dataURL = tempCanvas.toDataURL('image/png');
+                const newWindow = window.open();
+                newWindow.document.write('<img src="' + dataURL + '" alt="debug whiteboard"/>');
+            };
+
+            // ---------- Função saveWhiteboard corrigida com fundo branco ----------
+            window.saveWhiteboard = function() {
+                console.log('saveWhiteboard chamado');
+                
+                // Cria um canvas temporário para garantir fundo branco
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Preenche com branco
+                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Desenha os traços do último estado (se houver)
+                if (undoStack.length > 0) {
+                    tempCtx.putImageData(undoStack[undoStack.length-1], 0, 0);
+                } else {
+                    // Se não há traços, desenha o conteúdo atual do canvas (caso tenha sido carregada uma imagem salva)
+                    tempCtx.drawImage(canvas, 0, 0);
+                }
+                
+                // Desenha as imagens (que estão em imageObjects) por cima
+                for (let obj of imageObjects) {
+                    const width = obj.originalWidth * obj.scale;
+                    const height = obj.originalHeight * obj.scale;
+                    tempCtx.drawImage(obj.img, obj.x, obj.y, width, height);
+                }
+                
+                // Gera a dataURL a partir do canvas temporário
+                const dataURL = tempCanvas.toDataURL('image/png');
+                console.log('DataURL gerada, tamanho:', dataURL.length);
+                
+                // Envia para o servidor
+                fetch(saveWhiteboardUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: topic,
+                        image_filename: currentImg,
+                        q_idx: qIdx,
+                        image_data: dataURL
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Resposta do servidor:', data);
+                    if (data.success) {
+                        alert('Quadro branco salvo com sucesso!');
+                        if (currentQuestao) {
+                            currentQuestao.whiteboard_img = data.filename;
+                            currentQuestao.whiteboard_url = `/static/whiteboards/topics/${topic}/${data.filename}`;
+                        }
+                    } else {
+                        alert('Erro ao salvar: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    alert('Erro na comunicação com o servidor.');
+                });
+            };
+        }
+
+        const toggleBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+        });
+    </script>
+</body>
+</html>
