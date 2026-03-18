@@ -148,7 +148,8 @@
         "questao": "8 (Unisc 2022)",
         "tipo": "objetiva",
         "resposta": "D",
-        "explicacao": "A trajetória é $h(x) = -3x^2 + 30x$. A altura máxima é o $y_v$.\r\n$x_v = \\frac{-30}{2(-3)} = \\frac{-30}{-6} = 5$.\r\nSubstituindo $x = 5$: $h(5) = -3(5)^2 + 30(5) = -3(25) + 150 = -75 + 150 = 75\\text{ cm}$."
+        "explicacao": "A trajetória é $h(x) = -3x^2 + 30x$. A altura máxima é o $y_v$.\r\n$x_v = \\frac{-30}{2(-3)} = \\frac{-30}{-6} = 5$.\r\nSubstituindo $x = 5$: $h(5) = -3(5)^2 + 30(5) = -3(25) + 150 = -75 + 150 = 75\\text{ cm}$.",
+        "whiteboard_img": "whiteboard_WhatsApp_Image_2026-03-10_at_15.47.03_q4.png"
       },
       {
         "questao": "9",
@@ -184,13 +185,15 @@
         "questao": "3",
         "tipo": "objetiva",
         "resposta": "E",
-        "explicacao": "A trajetória é $y = -x^2 + 5x$.\r\n\r\n1. **Altura máxima ($y_v$):**\r\n$x_v = \\frac{-5}{2(-1)} = 2,5$\r\n$y_v = -(2,5)^2 + 5(2,5) = -6,25 + 12,5 = \\mathbf{6,25\\ metros}$.\r\n2. **Distância no solo:** É a raiz positiva da função ($y=0$).\r\n$-x^2 + 5x = 0 \\Rightarrow x(-x + 5) = 0$. As raízes são $x=0$ e $x=5$.\r\nA distância entre a decolagem e o pouso é **5 metros**.\r\nPorém, o enunciado pede a distância \"medida do ponto em que o avião levanta voo até o ponto em que ele pousa\", que é 5 m. Ao conferir as alternativas, a que combina a altura de 6,25 m com a distância de 5 m é a letra D. *Nota: Houve um erro de digitação na alternativa E da imagem, que repete o valor de altura, mas a lógica matemática aponta para a combinação 6,25 m e 5 m.*"
+        "explicacao": "A trajetória é $y = -x^2 + 5x$.\r\n\r\n1. **Altura máxima ($y_v$):**\r\n$x_v = \\frac{-5}{2(-1)} = 2,5$\r\n$y_v = -(2,5)^2 + 5(2,5) = -6,25 + 12,5 = \\mathbf{6,25\\ metros}$.\r\n2. **Distância no solo:** É a raiz positiva da função ($y=0$).\r\n$-x^2 + 5x = 0 \\Rightarrow x(-x + 5) = 0$. As raízes são $x=0$ e $x=5$.\r\nA distância entre a decolagem e o pouso é **5 metros**.\r\nPorém, o enunciado pede a distância \"medida do ponto em que o avião levanta voo até o ponto em que ele pousa\", que é 5 m. Ao conferir as alternativas, a que combina a altura de 6,25 m com a distância de 5 m é a letra D. *Nota: Houve um erro de digitação na alternativa E da imagem, que repete o valor de altura, mas a lógica matemática aponta para a combinação 6,25 m e 5 m.*",
+        "whiteboard_img": "whiteboard_WhatsApp_Image_2026-03-10_at_15.47.27_q3.png"
       },
       {
         "questao": "4 (Ueg 2019)",
         "tipo": "objetiva",
         "resposta": "C",
-        "explicacao": "Arrecadação $A(x) = (\\text{Preço original} + \\text{Aumento}) \\times (\\text{Clientes originais} - \\text{Perda})$.\r\nSeja $x$ o valor do aumento em reais.\r\n$A(x) = (20 + x)(50 - 2x) = -2x^2 + 10x + 1000$.\r\nO aumento que maximiza a arrecadação é o $x$ do vértice:\r\n$x_v = \\frac{-b}{2a} = \\frac{-10}{2(-2)} = \\frac{-10}{-4} = \\mathbf{2,50}$.\r\nO valor do aumento deve ser de R$ 2,50."
+        "explicacao": "Arrecadação $A(x) = (\\text{Preço original} + \\text{Aumento}) \\times (\\text{Clientes originais} - \\text{Perda})$.\r\nSeja $x$ o valor do aumento em reais.\r\n$A(x) = (20 + x)(50 - 2x) = -2x^2 + 10x + 1000$.\r\nO aumento que maximiza a arrecadação é o $x$ do vértice:\r\n$x_v = \\frac{-b}{2a} = \\frac{-10}{2(-2)} = \\frac{-10}{-4} = \\mathbf{2,50}$.\r\nO valor do aumento deve ser de R$ 2,50.",
+        "whiteboard_img": "whiteboard_WhatsApp_Image_2026-03-10_at_15.47.27_q4.png"
       }
     ]
   },
@@ -269,6 +272,18 @@
         "tipo": "dissertativa",
         "resposta": "São necessários 130 metros de pendurais.",
         "explicacao": "A ponte é uma parábola. Se o centro é $(0, 40)$ e a base tem $60+60=120m$ (pois são 3 vãos de 30m de cada lado), a função é $y = ax^2 + 40$.\r\n\r\n1. O ponto da extremidade é $(60, 0)$: $0 = a(60^2) + 40 \\Rightarrow a = -40/3600 = -1/90$.\r\n2. Os pendurais estão em $x = 30$ e $x = -30$ (os das extremidades em $x=60$ costumam ser apoios, mas a questão pede os pendurais metálicos).\r\n3. Altura em $x = 30$: $y = -1/90(30^2) + 40 = -1/90(900) + 40 = -10 + 40 = 30m$.\r\n4. Como são 3 pendurais de cada lado:\r\n* O central (no vértice) tem 40m.\r\n* Dois a 30m do centro (um de cada lado) têm 30m cada.\r\n* Dois nas extremidades (em $x=60$, se contarem como pendurais) teriam 0m.\r\n\r\n\r\n5. Se a pergunta refere-se aos 6 pendurais citados (3 de cada lado, excluindo o centro): 2 de 30m e 2 de 10m (se houvesse outra marcação) ou apenas os de 30m. Pela imagem e o texto \"três de cada lado\", somamos as alturas calculadas para os pontos de 30m e as distâncias proporcionais."
+      }
+    ]
+  },
+  {
+    "imagem": "WhatsApp_Image_2026-03-12_at_20.06.10.jpeg",
+    "questoes": [
+      {
+        "questao": "5",
+        "tipo": "",
+        "resposta": "",
+        "explicacao": "",
+        "whiteboard_img": "whiteboard_WhatsApp_Image_2026-03-12_at_20.06.10_q0.png"
       }
     ]
   }

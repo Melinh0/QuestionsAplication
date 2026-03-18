@@ -272,7 +272,9 @@ function TopicView() {
             <div className={`tab-content ${activeTab === 'whiteboard' ? 'active' : ''}`} id="tab-whiteboard">
               {currentQuestion ? (
                 <>
+                  {/* key dinâmica garante a recriação do componente ao mudar de imagem/questão */}
                   <Whiteboard
+                    key={`${currentImage}-${qIdx}`}
                     initialImage={whiteboardUrl}
                     onSave={handleSaveWhiteboard}
                   />

@@ -10,7 +10,6 @@ function QuestionEditor({ question, onSave, onDelete, topicName, imageFilename, 
   const [explicacao, setExplicacao] = useState(question.explicacao || '');
   const [preview, setPreview] = useState(false);
 
-  // Sincroniza o estado local quando a questão muda
   useEffect(() => {
     setResposta(question.resposta || '');
     setExplicacao(question.explicacao || '');

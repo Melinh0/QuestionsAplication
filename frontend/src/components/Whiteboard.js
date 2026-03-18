@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 function Whiteboard({ initialImage, onSave }) {
-  const canvasRef = useRef(null);          // canvas principal (exibe tudo)
-  const tracesCanvasRef = useRef(null);    // canvas oculto para traços
+  const canvasRef = useRef(null);
+  const tracesCanvasRef = useRef(null);
   const containerRef = useRef(null);
 
   const [ctx, setCtx] = useState(null);
@@ -19,22 +19,22 @@ function Whiteboard({ initialImage, onSave }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragStartProps, setDragStartProps] = useState({ x: 0, y: 0, scale: 1 });
   const [eraserIndicator, setEraserIndicator] = useState({ visible: false, x: 0, y: 0 });
-  const [backgroundImage, setBackgroundImage] = useState(null); // imagem de fundo (quadro salvo)
+  const [backgroundImage, setBackgroundImage] = useState(null);
 
   const BITMAP_WIDTH = 1000;
   const BITMAP_HEIGHT = 2000;
   const HANDLE_SIZE = 15;
 
-  // --- Funções auxiliares ---
+  // Salva estado dos traços
   const saveTracesState = useCallback((context = tracesCtx) => {
     if (!context) return;
     const imageData = context.getImageData(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
     setUndoStack(prev => [...prev, imageData].slice(-20));
   }, [tracesCtx]);
 
+  // Redesenha todas as imagens (fundos e objetos)
   const redrawAllImages = useCallback(() => {
     if (!ctx) return;
-    // Desenha a imagem de fundo (se houver)
     if (backgroundImage) {
       ctx.drawImage(
         backgroundImage.img,
@@ -44,13 +44,11 @@ function Whiteboard({ initialImage, onSave }) {
         backgroundImage.height
       );
     }
-    // Desenha todas as imagens (objetos colados)
     for (let obj of imageObjects) {
       const width = obj.originalWidth * obj.scale;
       const height = obj.originalHeight * obj.scale;
       ctx.drawImage(obj.img, obj.x, obj.y, width, height);
     }
-    // Desenha alças se houver imagem selecionada
     if (selectedImageIndex >= 0 && selectedImageIndex < imageObjects.length) {
       const obj = imageObjects[selectedImageIndex];
       const width = obj.originalWidth * obj.scale;
@@ -66,14 +64,12 @@ function Whiteboard({ initialImage, onSave }) {
     }
   }, [ctx, backgroundImage, imageObjects, selectedImageIndex]);
 
+  // Redesenho completo (fundo + traços + imagens)
   const fullRedraw = useCallback(() => {
     if (!ctx || !tracesCtx) return;
-    // Limpa o canvas principal
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
-    // Desenha os traços do canvas oculto
     ctx.drawImage(tracesCanvasRef.current, 0, 0);
-    // Desenha imagens por cima
     redrawAllImages();
   }, [ctx, tracesCtx, redrawAllImages]);
 
@@ -87,6 +83,7 @@ function Whiteboard({ initialImage, onSave }) {
     }
   }, [undoStack, tracesCtx, fullRedraw]);
 
+  // Converte coordenadas da tela para coordenadas do bitmap
   const getCanvasCoords = useCallback((e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const scaleX = BITMAP_WIDTH / rect.width;
@@ -96,7 +93,7 @@ function Whiteboard({ initialImage, onSave }) {
     return { x, y };
   }, []);
 
-  // --- Inicialização dos canvas ---
+  // Inicialização dos canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     canvas.width = BITMAP_WIDTH;
@@ -130,29 +127,29 @@ function Whiteboard({ initialImage, onSave }) {
         const y = (BITMAP_HEIGHT - height) / 2;
         setBackgroundImage({ img, x, y, width, height });
         context.drawImage(img, x, y, width, height);
-        // Salva o estado inicial dos traços (vazio)
         saveTracesState(tracesContext);
       };
     } else {
       saveTracesState(tracesContext);
     }
 
+    // Força foco no canvas
     canvas.focus();
   }, [initialImage, saveTracesState]);
 
-  // Atualiza o canvas principal sempre que algo mudar
+  // Redesenha sempre que algo muda
   useEffect(() => {
     fullRedraw();
   }, [imageObjects, selectedImageIndex, undoStack, backgroundImage, fullRedraw]);
 
-  // --- Handlers de eventos de ponteiro (caneta, mouse, toque) ---
+  // Handlers de eventos (com logs para depuração)
   const handlePointerDown = useCallback((e) => {
     e.preventDefault();
-    e.target.setPointerCapture(e.pointerId); // Garante que os eventos sigam o ponteiro
-
+    console.log('Pointer down');
+    e.target.setPointerCapture(e.pointerId);
     const coords = getCanvasCoords(e);
 
-    // Verifica se clicou em alguma imagem
+    // Verifica clique em imagens (código existente)
     let hitIndex = -1;
     let hitType = null;
     for (let i = imageObjects.length - 1; i >= 0; i--) {
@@ -188,15 +185,18 @@ function Whiteboard({ initialImage, onSave }) {
         const obj = imageObjects[hitIndex];
         setDragStartProps({ x: obj.x, y: obj.y, scale: obj.scale });
       }
-      return; // não inicia desenho
+      return;
     }
 
-    // Se clicou fora, desseleciona
     if (selectedImageIndex !== -1) {
       setSelectedImageIndex(-1);
     }
 
-    // Inicia desenho no canvas de traços
+    if (!tracesCtx) {
+      console.error('tracesCtx não disponível');
+      return;
+    }
+
     setDrawing(true);
     tracesCtx.beginPath();
     tracesCtx.moveTo(coords.x, coords.y);
@@ -215,6 +215,7 @@ function Whiteboard({ initialImage, onSave }) {
       const dx = coords.x - dragStart.x;
       const dy = coords.y - dragStart.y;
 
+      // Lógica de redimensionamento/movimento (existente)
       if (dragType === 'move') {
         obj.x = dragStartProps.x + dx;
         obj.y = dragStartProps.y + dy;
@@ -237,18 +238,18 @@ function Whiteboard({ initialImage, onSave }) {
         obj.y = dragStartProps.y + (obj.originalHeight * dragStartProps.scale - obj.originalHeight * obj.scale);
       }
 
-      fullRedraw(); // atualiza durante o arrasto
+      fullRedraw();
       return;
     }
 
-    if (drawing) {
+    if (drawing && tracesCtx) {
       tracesCtx.strokeStyle = eraserMode ? '#ffffff' : color;
       tracesCtx.lineWidth = brushSize;
       tracesCtx.lineTo(coords.x, coords.y);
       tracesCtx.stroke();
       tracesCtx.beginPath();
       tracesCtx.moveTo(coords.x, coords.y);
-      fullRedraw(); // atualiza o canvas principal
+      fullRedraw();
     }
 
     if (eraserMode) {
@@ -261,7 +262,7 @@ function Whiteboard({ initialImage, onSave }) {
   const handlePointerUp = useCallback((e) => {
     e.preventDefault();
     if (isDragging) {
-      setImageObjects([...imageObjects]); // persiste alterações
+      setImageObjects([...imageObjects]);
       setIsDragging(false);
       setDragType(null);
     }
@@ -279,15 +280,13 @@ function Whiteboard({ initialImage, onSave }) {
     setEraserIndicator({ visible: false, x: 0, y: 0 });
   }, [handlePointerUp]);
 
-  // --- Ações ---
+  // Ações existentes (clear, paste, delete, save)
   const clearCanvas = useCallback(() => {
     tracesCtx.fillStyle = '#ffffff';
     tracesCtx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
     saveTracesState();
     setImageObjects([]);
     setSelectedImageIndex(-1);
-    // Mantém a imagem de fundo (quadro salvo) – opcional: se quiser limpar também, descomente a linha abaixo
-    // setBackgroundImage(null);
     fullRedraw();
   }, [tracesCtx, saveTracesState, fullRedraw]);
 
@@ -325,7 +324,6 @@ function Whiteboard({ initialImage, onSave }) {
           setSelectedImageIndex(prev.length);
           return newArray;
         });
-        // Não revogamos a URL imediatamente, pois a imagem ainda será usada
       };
       img.onerror = () => {
         alert('Erro ao carregar a imagem colada.');
@@ -352,7 +350,6 @@ function Whiteboard({ initialImage, onSave }) {
     const tempCtx = tempCanvas.getContext('2d');
     tempCtx.fillStyle = '#ffffff';
     tempCtx.fillRect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT);
-    // Desenha a imagem de fundo
     if (backgroundImage) {
       tempCtx.drawImage(
         backgroundImage.img,
@@ -362,9 +359,7 @@ function Whiteboard({ initialImage, onSave }) {
         backgroundImage.height
       );
     }
-    // Desenha os traços
     tempCtx.drawImage(tracesCanvasRef.current, 0, 0);
-    // Desenha as imagens coladas
     imageObjects.forEach(obj => {
       const w = obj.originalWidth * obj.scale;
       const h = obj.originalHeight * obj.scale;
@@ -374,7 +369,7 @@ function Whiteboard({ initialImage, onSave }) {
     onSave(dataURL);
   }, [backgroundImage, imageObjects, onSave]);
 
-  // --- Atalhos de teclado ---
+  // Atalhos de teclado
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey && e.key === 'z') {
@@ -390,7 +385,6 @@ function Whiteboard({ initialImage, onSave }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, deleteSelectedImage, selectedImageIndex]);
 
-  // --- Listener global para Ctrl+V ---
   useEffect(() => {
     const handleGlobalPaste = (e) => {
       if (containerRef.current && containerRef.current.offsetParent !== null) {
@@ -420,7 +414,16 @@ function Whiteboard({ initialImage, onSave }) {
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerLeave}
-          style={{ display: 'block', width: '100%', height: 'auto', touchAction: 'none', cursor: 'crosshair' }}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: 'auto',
+            touchAction: 'none',
+            cursor: 'crosshair',
+            minHeight: '400px', // Garante altura mínima para interação
+            backgroundColor: '#fff',
+            border: '1px solid #ccc'
+          }}
         />
       </div>
       <div className="whiteboard-controls">
@@ -436,11 +439,11 @@ function Whiteboard({ initialImage, onSave }) {
           🗑️ Deletar imagem selecionada
         </button>
         <div className="eraser-size-control">
-          <label htmlFor="eraserSize">Tamanho da borracha: {brushSize}px</label>
+          <label htmlFor="eraserSize">Tamanho: {brushSize}px</label>
           <input
             type="range"
             id="eraserSize"
-            min="5"
+            min="1"
             max="50"
             value={brushSize}
             onChange={(e) => setBrushSize(parseInt(e.target.value))}
